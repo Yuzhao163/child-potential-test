@@ -1,0 +1,3382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童潜能评估平台 - 发现孩子的无限可能</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --radius: 16px;
+            --radius-sm: 8px;
+            --radius-lg: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #64748b;
+            --border: #334155;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        /* 背景装饰 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 70%, rgba(245, 158, 11, 0.08) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .navbar-brand svg {
+            width: 40px;
+            height: 40px;
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .theme-toggle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: none;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 主要内容区 */
+        .main-content {
+            padding-top: 90px;
+            min-height: 100vh;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 首页样式 */
+        .hero {
+            padding: 3rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .hero p {
+            font-size: 1.125rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+            border-radius: 2px;
+        }
+
+        /* 分类卡片网格 */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .category-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--card-gradient);
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .category-card .icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+            background: var(--card-bg);
+        }
+
+        .category-card h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-card .subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .category-card .dimensions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .dimension-tag {
+            padding: 4px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* 评估页面 */
+        .assessment-setup {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .setup-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+
+        .setup-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .gender-options {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .gender-option {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-align: center;
+            transition: var(--transition);
+            background: var(--bg-primary);
+        }
+
+        .gender-option:hover {
+            border-color: var(--primary);
+        }
+
+        .gender-option.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .category-select-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .category-select-item {
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-primary);
+        }
+
+        .category-select-item:hover {
+            border-color: var(--primary);
+        }
+
+        .category-select-item.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .category-select-item .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .category-select-item.selected .checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .category-select-item.selected .checkbox::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-lg {
+            padding: 18px 36px;
+            font-size: 1.125rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* 测试页面 */
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .test-header {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+        }
+
+        .test-progress {
+            flex: 1;
+            margin-right: 2rem;
+        }
+
+        .progress-bar-container {
+            height: 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .test-timer {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .question-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .question-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+
+        .question-dimension {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        .likert-scale {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .likert-option {
+            flex: 1;
+            padding: 16px 8px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--bg-primary);
+        }
+
+        .likert-option:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .likert-option.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .likert-option .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .likert-option .label {
+            font-size: 0.75rem;
+        }
+
+        .likert-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .test-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        /* 结果页面 */
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            color: white;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .results-header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .results-header p {
+            opacity: 0.9;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .result-card h3 {
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radar-chart-container {
+            position: relative;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bar-chart-container {
+            height: 300px;
+        }
+
+        /* 百分位数显示 */
+        .percentile-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .percentile-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--primary) var(--percent), var(--bg-tertiary) 0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .percentile-circle::before {
+            content: '';
+            width: 120px;
+            height: 120px;
+            background: var(--bg-secondary);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .percentile-value {
+            position: relative;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .percentile-label {
+            text-align: center;
+        }
+
+        .percentile-label h4 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .percentile-label p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* 能力等级 */
+        .level-indicator {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+        }
+
+        .level-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .level-badge.excellent {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .level-badge.good {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .level-badge.average {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .level-badge.needs-improvement {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        /* 维度分数 */
+        .dimension-scores {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .dimension-score-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .dimension-score-item .name {
+            width: 120px;
+            font-size: 0.875rem;
+        }
+
+        .dimension-score-item .bar-container {
+            flex: 1;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .dimension-score-item .bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+
+        .dimension-score-item .value {
+            width: 40px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        /* 建议区域 */
+        .recommendations {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .recommendations h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-item {
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.75rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .recommendation-item h4 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .recommendation-item p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* 历史记录 */
+        .history-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .history-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .history-item:hover {
+            transform: translateX(8px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .history-info h4 {
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .history-info p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .history-score {
+            text-align: right;
+        }
+
+        .history-score .score {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .history-score .date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-icon:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 关于页面 */
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .about-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .about-card h2 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .about-card p {
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .feature-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        /* 动画 */
+        .animate-in {
+            animation: animateIn 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes animateIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        .stagger-5 { animation-delay: 0.5s; }
+        .stagger-6 { animation-delay: 0.6s; }
+
+        /* 彩带动画 */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 打印样式 */
+        @media print {
+            .navbar, .theme-toggle, .btn, .test-navigation, .nav-link {
+                display: none !important;
+            }
+
+            .main-content {
+                padding-top: 0;
+            }
+
+            .page {
+                display: block !important;
+            }
+
+            .results-header {
+                background: none !important;
+                color: var(--text-primary) !important;
+                border: 2px solid var(--border);
+            }
+
+            .result-card {
+                break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid var(--border);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 1rem;
+            }
+
+            .navbar-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                padding: 0.5rem;
+                justify-content: space-around;
+                border-top: 1px solid var(--border);
+            }
+
+            .nav-link span {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 1.75rem;
+            }
+
+            .hero-stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .likert-scale {
+                flex-direction: column;
+            }
+
+            .likert-option {
+                flex-direction: row;
+                justify-content: flex-start;
+                gap: 1rem;
+            }
+        }
+
+        /* 加载动画 */
+        .loading-spinner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            font-size: 0.75rem;
+            border-radius: 6px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .tooltip:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: var(--transition);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg-tertiary);
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        /* 强度热力图 */
+        .heatmap-container {
+            overflow-x: auto;
+        }
+
+        .heatmap {
+            display: grid;
+            gap: 2px;
+            min-width: 600px;
+        }
+
+        .heatmap-row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .heatmap-label {
+            width: 100px;
+            font-size: 0.75rem;
+            text-align: right;
+            padding-right: 8px;
+            color: var(--text-secondary);
+        }
+
+        .heatmap-cell {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .heatmap-header {
+            display: flex;
+            gap: 2px;
+            margin-left: 104px;
+            margin-bottom: 8px;
+        }
+
+        .heatmap-header span {
+            width: 30px;
+            text-align: center;
+            font-size: 0.625rem;
+            color: var(--text-muted);
+        }
+
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .heatmap-legend-gradient {
+            width: 150px;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981);
+        }
+
+        /* 导出按钮组 */
+        .export-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <a href="#home" class="navbar-brand">
+            <svg viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" fill="url(#grad1)" />
+                <path d="M20 8 L24 16 L32 16 L26 22 L28 30 L20 25 L12 30 L14 22 L8 16 L16 16 Z" fill="white"/>
+                <defs>
+                    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#6366f1"/>
+                        <stop offset="100%" style="stop-color:#ec4899"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            儿童潜能评估
+        </a>
+        <div class="navbar-nav">
+            <a href="#home" class="nav-link active" data-page="home">
+                <span>首页</span>
+            </a>
+            <a href="#assessment" class="nav-link" data-page="assessment">
+                <span>开始评估</span>
+            </a>
+            <a href="#history" class="nav-link" data-page="history">
+                <span>历史记录</span>
+            </a>
+            <a href="#about" class="nav-link" data-page="about">
+                <span>关于我们</span>
+            </a>
+            <button class="theme-toggle" onclick="toggleTheme()" title="切换主题">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="main-content">
+        <!-- 首页 -->
+        <section id="page-home" class="page active">
+            <div class="hero">
+                <h1>发现孩子的无限可能</h1>
+                <p>基于多元智能理论，科学评估儿童潜能，帮助家长了解孩子的独特优势和发展方向</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">评估维度</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">80+</div>
+                        <div class="stat-label">细分指标</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">1000+</div>
+                        <div class="stat-label">家庭选择</div>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="navigateTo('assessment')" style="margin-top: 2rem;">
+                    开始评估 →
+                </button>
+            </div>
+
+            <div class="container">
+                <h2 class="section-title">评估类别</h2>
+                <div class="category-grid" id="categoryGrid">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 评估设置页 -->
+        <section id="page-assessment" class="page">
+            <div class="assessment-setup">
+                <div class="setup-card">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        孩子信息
+                    </h2>
+                    <div class="form-group">
+                        <label>孩子姓名</label>
+                        <input type="text" class="form-control" id="childName" placeholder="请输入孩子姓名" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label>年龄</label>
+                        <input type="number" class="form-control" id="childAge" placeholder="请输入年龄" min="3" max="18" value="8">
+                    </div>
+                    <div class="form-group">
+                        <label>性别</label>
+                        <div class="gender-options">
+                            <div class="gender-option selected" data-gender="male" onclick="selectGender('male')">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="10" cy="14" r="5"/>
+                                    <path d="M19 5l-5.4 5.4M19 5h-5M19 5v5"/>
+                                </svg>
+                                <div>男孩</div>
+                            </div>
+                            <div class="gender-option" data-gender="female" onclick="selectGender('female')">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="9" r="5"/>
+                                    <path d="M12 14v7M9 18h6"/>
+                                </svg>
+                                <div>女孩</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-card">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        选择评估类别
+                    </h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">请选择您希望评估的类别（可多选），建议选择3-5个类别进行综合评估</p>
+                    <div class="category-select-grid" id="categorySelect">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-lg btn-block" onclick="startAssessment()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    开始测评
+                </button>
+            </div>
+        </section>
+
+        <!-- 测试页 -->
+        <section id="page-test" class="page">
+            <div class="test-container">
+                <div class="test-header">
+                    <div class="test-progress">
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">问题 1 / 40</div>
+                    </div>
+                    <div class="test-timer" id="testTimer">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span id="timerDisplay">00:00</span>
+                    </div>
+                </div>
+
+                <div class="question-card" id="questionCard">
+                    <div class="question-category" id="questionCategory">
+                        学术智能
+                    </div>
+                    <div class="question-text" id="questionText">
+                        您的孩子是否喜欢阅读书籍？
+                    </div>
+                    <div class="question-dimension" id="questionDimension">
+                        维度：阅读理解
+                    </div>
+
+                    <div class="likert-scale" id="likertScale">
+                        <div class="likert-option" data-value="1" onclick="selectLikert(1)">
+                            <div class="value">1</div>
+                            <div class="label">完全不同意</div>
+                        </div>
+                        <div class="likert-option" data-value="2" onclick="selectLikert(2)">
+                            <div class="value">2</div>
+                            <div class="label">不同意</div>
+                        </div>
+                        <div class="likert-option" data-value="3" onclick="selectLikert(3)">
+                            <div class="value">3</div>
+                            <div class="label">一般</div>
+                        </div>
+                        <div class="likert-option" data-value="4" onclick="selectLikert(4)">
+                            <div class="value">4</div>
+                            <div class="label">同意</div>
+                        </div>
+                        <div class="likert-option" data-value="5" onclick="selectLikert(5)">
+                            <div class="value">5</div>
+                            <div class="label">完全同意</div>
+                        </div>
+                    </div>
+                    <div class="likert-scale-labels">
+                        <span>完全不同意</span>
+                        <span>完全同意</span>
+                    </div>
+                </div>
+
+                <div class="test-navigation">
+                    <button class="btn btn-secondary" id="prevBtn" onclick="prevQuestion()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        上一题
+                    </button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                        下一题
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果页 -->
+        <section id="page-result" class="page">
+            <div class="results-container">
+                <div class="results-header">
+                    <h1>评估报告</h1>
+                    <p id="resultChildName">张小明的潜能评估报告</p>
+                    <p id="resultDate" style="opacity: 0.8; margin-top: 0.5rem;">评估日期：2024年1月15日</p>
+                </div>
+
+                <div class="results-grid">
+                    <div class="result-card">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            综合雷达图
+                        </h3>
+                        <div class="radar-chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="result-card">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 20V10M12 20V4M6 20v-6"/>
+                            </svg>
+                            能力等级
+                        </h3>
+                        <div class="percentile-display">
+                            <div class="percentile-circle" style="--percent: 75%;">
+                                <div class="percentile-value" id="overallPercentile">75</div>
+                            </div>
+                            <div class="percentile-label">
+                                <h4>综合得分</h4>
+                                <p id="levelDescription">孩子的综合能力表现优秀，在多个领域展现出较强的潜力</p>
+                            </div>
+                        </div>
+                        <div class="level-indicator" id="levelIndicator">
+                            <span class="level-badge good">优秀</span>
+                            <span>综合能力表现优秀，建议继续强化优势领域</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-grid" id="categoryCharts">
+                    <!-- 动态生成每个类别的图表 -->
+                </div>
+
+                <div class="result-card" id="heatmapCard">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <rect x="7" y="7" width="3" height="3"/>
+                            <rect x="14" y="7" width="3" height="3"/>
+                            <rect x="7" y="14" width="3" height="3"/>
+                            <rect x="14" y="14" width="3" height="3"/>
+                        </svg>
+                        能力热力图
+                    </h3>
+                    <div class="heatmap-container">
+                        <div class="heatmap-header" id="heatmapHeader"></div>
+                        <div class="heatmap" id="heatmap"></div>
+                    </div>
+                    <div class="heatmap-legend">
+                        <span>需加强</span>
+                        <div class="heatmap-legend-gradient"></div>
+                        <span>优秀</span>
+                    </div>
+                </div>
+
+                <div class="recommendations" id="recommendationsCard">
+                    <h3>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18h6M10 22h4M12 2v17"/>
+                            <path d="M5 12h14"/>
+                        </svg>
+                        个性化建议
+                    </h3>
+                    <div id="recommendationsList">
+                        <!-- 动态生成 -->
+                    </div>
+                </div>
+
+                <div class="export-actions" style="justify-content: center;">
+                    <button class="btn btn-primary" onclick="exportPDF()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        导出PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportJSON()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        导出数据
+                    </button>
+                    <button class="btn btn-secondary" onclick="shareResult()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"/>
+                            <circle cx="6" cy="12" r="3"/>
+                            <circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                        </svg>
+                        分享结果
+                    </button>
+                    <button class="btn btn-secondary" onclick="navigateTo('assessment')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"/>
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                        </svg>
+                        重新评估
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 历史记录页 -->
+        <section id="page-history" class="page">
+            <div class="container" style="padding-top: 2rem;">
+                <h2 class="section-title">历史记录</h2>
+                <div class="history-list" id="historyList">
+                    <!-- 动态生成 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于页 -->
+        <section id="page-about" class="page">
+            <div class="about-content">
+                <div class="about-card">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                        关于评估系统
+                    </h2>
+                    <p>儿童潜能评估平台基于霍华德·加德纳的多元智能理论，结合中国儿童发展特点设计。本系统从12个核心维度评估儿童的潜能发展，帮助家长和教育者更好地了解孩子的独特优势。</p>
+                </div>
+
+                <div class="about-card">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        评估维度说明
+                    </h2>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">📚</div>
+                            <div>
+                                <h4>学术智能</h4>
+                                <p>评估孩子在语言表达、数学逻辑、阅读理解等方面的能力</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🎨</div>
+                            <div>
+                                <h4>艺术创造</h4>
+                                <p>评估孩子的视觉艺术、创意设计、想象力等创造力</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">🏃</div>
+                            <div>
+                                <h4>体育运动</h4>
+                                <p>评估孩子的大运动能力、协调性、反应速度等身体素质</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">💻</div>
+                            <div>
+                                <h4>科技素养</h4>
+                                <p>评估孩子的编程思维、逻辑推理、数字素养等科技能力</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h2>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        隐私保护
+                    </h2>
+                    <p>所有评估数据仅存储在您的本地设备中，我们不会收集或上传任何个人信息。您可以随时清除历史记录，保护孩子的隐私安全。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 彩带容器 -->
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="shareModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>分享结果</h3>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                以下是您孩子的评估结果分享码，请妥善保管：
+            </p>
+            <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius-sm); font-family: monospace; word-break: break-all;" id="shareCode">
+                正在生成...
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="copyShareCode()">复制码</button>
+                <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // 评估数据定义
+        // ============================================
+        const CATEGORIES = [
+            {
+                id: 'academic',
+                name: '学术智能',
+                subtitle: 'Academic Intelligence',
+                icon: '📚',
+                color: '#6366f1',
+                gradient: 'linear-gradient(135deg, #6366f1, #818cf8)',
+                dimensions: [
+                    { id: 'language', name: '语言表达', questions: generateQuestions('language', '语言表达', 4) },
+                    { id: 'math', name: '数学逻辑', questions: generateQuestions('math', '数学逻辑思维', 4) },
+                    { id: 'reading', name: '阅读理解', questions: generateQuestions('reading', '阅读理解', 4) },
+                    { id: 'science', name: '科学探索', questions: generateQuestions('science', '科学探索', 4) },
+                    { id: 'processing', name: '信息处理', questions: generateQuestions('processing', '信息处理', 4) },
+                    { id: 'memory', name: '记忆力', questions: generateQuestions('memory', '记忆力', 4) },
+                    { id: 'attention', name: '注意力', questions: generateQuestions('attention', '注意力', 4) },
+                    { id: 'problem', name: '问题解决', questions: generateQuestions('problem', '问题解决', 4) }
+                ]
+            },
+            {
+                id: 'artistic',
+                name: '艺术创造',
+                subtitle: 'Artistic Creativity',
+                icon: '🎨',
+                color: '#ec4899',
+                gradient: 'linear-gradient(135deg, #ec4899, #f472b6)',
+                dimensions: [
+                    { id: 'visual', name: '视觉艺术', questions: generateQuestions('visual', '视觉艺术', 4) },
+                    { id: 'design', name: '创意设计', questions: generateQuestions('design', '创意设计', 4) },
+                    { id: 'imagination', name: '想象力', questions: generateQuestions('imagination', '想象力', 4) },
+                    { id: 'aesthetic', name: '审美感知', questions: generateQuestions('aesthetic', '审美感知', 4) },
+                    { id: 'hands', name: '动手能力', questions: generateQuestions('hands', '动手能力', 4) },
+                    { id: 'color', name: '色彩感', questions: generateQuestions('color', '色彩感', 4) },
+                    { id: 'space', name: '空间感知', questions: generateQuestions('space', '空间感知', 4) }
+                ]
+            },
+            {
+                id: 'sports',
+                name: '体育运动',
+                subtitle: 'Sports & Physical',
+                icon: '🏃',
+                color: '#10b981',
+                gradient: 'linear-gradient(135deg, #10b981, #34d399)',
+                dimensions: [
+                    { id: 'gross', name: '大运动能力', questions: generateQuestions('gross', '大运动能力', 4) },
+                    { id: 'fine', name: '精细动作', questions: generateQuestions('fine', '精细动作', 4) },
+                    { id: 'balance', name: '平衡协调', questions: generateQuestions('balance', '平衡协调', 4) },
+                    { id: 'flexibility', name: '柔韧性', questions: generateQuestions('flexibility', '柔韧性', 4) },
+                    { id: 'endurance', name: '体能耐力', questions: generateQuestions('endurance', '体能耐力', 4) },
+                    { id: 'body', name: '身体感知', questions: generateQuestions('body', '身体感知', 4) },
+                    { id: 'reaction', name: '反应速度', questions: generateQuestions('reaction', '反应速度', 4) },
+                    { id: 'sportsInterest', name: '运动兴趣', questions: generateQuestions('sportsInterest', '运动兴趣', 4) }
+                ]
+            },
+            {
+                id: 'tech',
+                name: '科技素养',
+                subtitle: 'Technology & Coding',
+                icon: '💻',
+                color: '#3b82f6',
+                gradient: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+                dimensions: [
+                    { id: 'programming', name: '编程思维', questions: generateQuestions('programming', '编程思维', 4) },
+                    { id: 'decomposition', name: '问题分解', questions: generateQuestions('decomposition', '问题分解', 4) },
+                    { id: 'digital', name: '数字素养', questions: generateQuestions('digital', '数字素养', 4) },
+                    { id: 'logic', name: '逻辑推理', questions: generateQuestions('logic', '逻辑推理', 4) },
+                    { id: 'techUsage', name: '技术使用', questions: generateQuestions('techUsage', '技术使用', 4) },
+                    { id: 'data', name: '数据感', questions: generateQuestions('data', '数据感', 4) },
+                    { id: 'system', name: '系统思维', questions: generateQuestions('system', '系统思维', 4) }
+                ]
+            },
+            {
+                id: 'social',
+                name: '社交情感',
+                subtitle: 'Social-Emotional',
+                icon: '💝',
+                color: '#f59e0b',
+                gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
+                dimensions: [
+                    { id: 'communication', name: '沟通能力', questions: generateQuestions('communication', '沟通能力', 4) },
+                    { id: 'teamwork', name: '团队协作', questions: generateQuestions('teamwork', '团队协作', 4) },
+                    { id: 'empathy', name: '同理心', questions: generateQuestions('empathy', '同理心', 4) },
+                    { id: 'emotion', name: '情绪管理', questions: generateQuestions('emotion', '情绪管理', 4) },
+                    { id: 'conflict', name: '冲突解决', questions: generateQuestions('conflict', '冲突解决', 4) },
+                    { id: 'socialAwareness', name: '社会意识', questions: generateQuestions('socialAwareness', '社会意识', 4) },
+                    { id: 'selfAwareness', name: '自我认知', questions: generateQuestions('selfAwareness', '自我认知', 4) }
+                ]
+            },
+            {
+                id: 'music',
+                name: '音乐韵律',
+                subtitle: 'Musical Intelligence',
+                icon: '🎵',
+                color: '#8b5cf6',
+                gradient: 'linear-gradient(135deg, #8b5cf6, #a78bfa)',
+                dimensions: [
+                    { id: 'rhythm', name: '节奏感知', questions: generateQuestions('rhythm', '节奏感知', 4) },
+                    { id: 'pitch', name: '音高感', questions: generateQuestions('pitch', '音高感', 4) },
+                    { id: 'musicMemory', name: '音乐记忆', questions: generateQuestions('musicMemory', '音乐记忆', 4) },
+                    { id: 'singing', name: '演唱能力', questions: generateQuestions('singing', '演唱能力', 4) },
+                    { id: 'instrument', name: '乐器兴趣', questions: generateQuestions('instrument', '乐器兴趣', 4) },
+                    { id: 'musicExpression', name: '音乐表达', questions: generateQuestions('musicExpression', '音乐表达', 4) },
+                    { id: 'sound', name: '声音敏感度', questions: generateQuestions('sound', '声音敏感度', 4) }
+                ]
+            },
+            {
+                id: 'language',
+                name: '语言发展',
+                subtitle: 'Language Development',
+                icon: '🗣️',
+                color: '#14b8a6',
+                gradient: 'linear-gradient(135deg, #14b8a6, #2dd4bf)',
+                dimensions: [
+                    { id: 'vocabulary', name: '词汇量', questions: generateQuestions('vocabulary', '词汇量', 4) },
+                    { id: 'grammar', name: '语法结构', questions: generateQuestions('grammar', '语法结构', 4) },
+                    { id: 'fluency', name: '表达流畅', questions: generateQuestions('fluency', '表达流畅', 4) },
+                    { id: 'listening', name: '听力理解', questions: generateQuestions('listening', '听力理解', 4) },
+                    { id: 'readingAbility', name: '阅读能力', questions: generateQuestions('readingAbility', '阅读能力', 4) },
+                    { id: 'writing', name: '书写技能', questions: generateQuestions('writing', '书写技能', 4) },
+                    { id: 'bilingual', name: '双语能力', questions: generateQuestions('bilingual', '双语能力', 4) }
+                ]
+            },
+            {
+                id: 'logic',
+                name: '逻辑思维',
+                subtitle: 'Logical Thinking',
+                icon: '🧩',
+                color: '#0ea5e9',
+                gradient: 'linear-gradient(135deg, #0ea5e9, #38bdf8)',
+                dimensions: [
+                    { id: 'pattern', name: '模式识别', questions: generateQuestions('pattern', '模式识别', 4) },
+                    { id: 'sequential', name: '顺序思维', questions: generateQuestions('sequential', '顺序思维', 4) },
+                    { id: 'causeEffect', name: '因果理解', questions: generateQuestions('causeEffect', '因果理解', 4) },
+                    { id: 'classification', name: '分类技能', questions: generateQuestions('classification', '分类技能', 4) },
+                    { id: 'evaluation', name: '评估能力', questions: generateQuestions('evaluation', '评估能力', 4) },
+                    { id: 'critical', name: '批判思维', questions: generateQuestions('critical', '批判思维', 4) },
+                    { id: 'abstract', name: '抽象思维', questions: generateQuestions('abstract', '抽象思维', 4) }
+                ]
+            },
+            {
+                id: 'leadership',
+                name: '领导力',
+                subtitle: 'Leadership & Initiative',
+                icon: '👑',
+                color: '#eab308',
+                gradient: 'linear-gradient(135deg, #eab308, #facc15)',
+                dimensions: [
+                    { id: 'organization', name: '组织能力', questions: generateQuestions('organization', '组织能力', 4) },
+                    { id: 'decision', name: '决策能力', questions: generateQuestions('decision', '决策能力', 4) },
+                    { id: 'responsibility', name: '责任感', questions: generateQuestions('responsibility', '责任感', 4) },
+                    { id: 'influence', name: '影响力', questions: generateQuestions('influence', '影响力', 4) },
+                    { id: 'risk', name: '冒险精神', questions: generateQuestions('risk', '冒险精神', 4) },
+                    { id: 'goalSetting', name: '目标设定', questions: generateQuestions('goalSetting', '目标设定', 4) },
+                    { id: 'motivation', name: '自我激励', questions: generateQuestions('motivation', '自我激励', 4) },
+                    { id: 'teamLeadership', name: '团队领导', questions: generateQuestions('teamLeadership', '团队领导', 4) }
+                ]
+            },
+            {
+                id: 'selfRegulation',
+                name: '自律专注',
+                subtitle: 'Self-Regulation',
+                icon: '🎯',
+                color: '#64748b',
+                gradient: 'linear-gradient(135deg, #64748b, #94a3b8)',
+                dimensions: [
+                    { id: 'focus', name: '专注时长', questions: generateQuestions('focus', '专注时长', 4) },
+                    { id: 'impulse', name: '冲动控制', questions: generateQuestions('impulse', '冲动控制', 4) },
+                    { id: 'timeMgmt', name: '时间管理', questions: generateQuestions('timeMgmt', '时间管理', 4) },
+                    { id: 'discipline', name: '自律性', questions: generateQuestions('discipline', '自律性', 4) },
+                    { id: 'delayed', name: '延迟满足', questions: generateQuestions('delayed', '延迟满足', 4) },
+                    { id: 'emotionReg', name: '情绪调节', questions: generateQuestions('emotionReg', '情绪调节', 4) },
+                    { id: 'metacognition', name: '元认知', questions: generateQuestions('metacognition', '元认知', 4) }
+                ]
+            },
+            {
+                id: 'imagination',
+                name: '想象力',
+                subtitle: 'Imagination & Curiosity',
+                icon: '✨',
+                color: '#d946ef',
+                gradient: 'linear-gradient(135deg, #d946ef, #e879f9)',
+                dimensions: [
+                    { id: 'fantasy', name: '幻想力', questions: generateQuestions('fantasy', '幻想力', 4) },
+                    { id: 'curiosity', name: '好奇心', questions: generateQuestions('curiosity', '好奇心', 4) },
+                    { id: 'exploration', name: '探索精神', questions: generateQuestions('exploration', '探索精神', 4) },
+                    { id: 'questioning', name: '提问能力', questions: generateQuestions('questioning', '提问能力', 4) },
+                    { id: 'hypothesis', name: '假设验证', questions: generateQuestions('hypothesis', '假设验证', 4) },
+                    { id: 'openness', name: '开放心态', questions: generateQuestions('openness', '开放心态', 4) },
+                    { id: 'storytelling', name: '故事创作', questions: generateQuestions('storytelling', '故事创作', 4) },
+                    { id: 'novel', name: '创新思维', questions: generateQuestions('novel', '创新思维', 4) }
+                ]
+            },
+            {
+                id: 'lifeSkills',
+                name: '生活自理',
+                subtitle: 'Life Skills',
+                icon: '🏠',
+                color: '#84cc16',
+                gradient: 'linear-gradient(135deg, #84cc16, #a3e635)',
+                dimensions: [
+                    { id: 'selfCare', name: '自我照顾', questions: generateQuestions('selfCare', '自我照顾', 4) },
+                    { id: 'planning', name: '日常规划', questions: generateQuestions('planning', '日常规划', 4) },
+                    { id: 'money', name: '金钱观念', questions: generateQuestions('money', '金钱观念', 4) },
+                    { id: 'safety', name: '安全意识', questions: generateQuestions('safety', '安全意识', 4) },
+                    { id: 'adaptation', name: '环境适应', questions: generateQuestions('adaptation', '环境适应', 4) },
+                    { id: 'independent', name: '独立解决问题', questions: generateQuestions('independent', '独立解决问题', 4) },
+                    { id: 'etiquette', name: '社交礼仪', questions: generateQuestions('etiquette', '社交礼仪', 4) }
+                ]
+            }
+        ];
+
+        // 问题模板
+        const QUESTION_TEMPLATES = {
+            // 学术智能
+            language: [
+                '孩子能清晰地用语言表达自己的想法和感受',
+                '孩子喜欢讲故事或描述发生的事情',
+                '孩子的词汇量丰富，能使用多种表达方式',
+                '孩子在对话中能积极回应并延伸话题'
+            ],
+            math: [
+                '孩子对数字和数量关系有较好的理解',
+                '孩子喜欢解决逻辑谜题或数学游戏',
+                '孩子能发现生活中的数学规律',
+                '孩子对排序、分类等概念掌握较好'
+            ],
+            reading: [
+                '孩子对阅读有浓厚兴趣，主动要求读书',
+                '孩子能理解故事情节的主要内容和人物关系',
+                '孩子能根据文章内容回答相关问题',
+                '孩子能推断文章中没有明确说明的信息'
+            ],
+            science: [
+                '孩子对自然现象和科学实验表现出好奇',
+                '孩子喜欢问"为什么"和"怎么样"的问题',
+                '孩子能通过观察和实验来学习新知识',
+                '孩子能记录和整理观察到的信息'
+            ],
+            processing: [
+                '孩子能较快地理解和遵循多步骤指令',
+                '孩子能注意力集中地完成信息整合任务',
+                '孩子能找出信息中的关键点和重点',
+                '孩子能有效地在不同信息间建立联系'
+            ],
+            memory: [
+                '孩子能较好地记住看过或听过的事情',
+                '孩子能回忆并复述故事或事件的细节',
+                '孩子有良好的视觉记忆能力',
+                '孩子有良好的听觉记忆能力'
+            ],
+            attention: [
+                '孩子能较长时间集中注意力在任务上',
+                '孩子不易被周围环境干扰分心',
+                '孩子能注意并发现细节中的差异',
+                '孩子在活动中能保持持续的关注'
+            ],
+            problem: [
+                '孩子遇到问题时能独立思考解决方案',
+                '孩子能分析问题的不同方面',
+                '孩子愿意尝试多种方法解决问题',
+                '孩子能从错误中学习并调整策略'
+            ],
+
+            // 艺术创造
+            visual: [
+                '孩子对绘画和涂鸦有浓厚兴趣',
+                '孩子能创作具有个人风格的作品',
+                '孩子能通过视觉艺术表达情感',
+                '孩子对色彩搭配有一定的感觉'
+            ],
+            design: [
+                '孩子喜欢设计或布置自己的空间',
+                '孩子能创造出独特而有创意的东西',
+                '孩子对美的物品和设计有敏锐观察',
+                '孩子能将创意想法转化为实际作品'
+            ],
+            aesthetic: [
+                '孩子对美的事物表现出欣赏和兴趣',
+                '孩子有自己的审美偏好和选择',
+                '孩子能注意到环境和物品的美感',
+                '孩子追求在作品中呈现美感'
+            ],
+            hands: [
+                '孩子能熟练使用剪刀、画笔等工具',
+                '孩子喜欢动手制作手工作品',
+                '孩子的手部动作协调且精准',
+                '孩子能独立完成复杂的手工任务'
+            ],
+            color: [
+                '孩子能准确识别和命名基本颜色',
+                '孩子能运用色彩表达情绪和想法',
+                '孩子对色彩的搭配有独特见解',
+                '孩子能注意到色彩细微的差异'
+            ],
+            space: [
+                '孩子能准确判断距离和位置',
+                '孩子对三维空间有较好的理解',
+                '孩子能拼装和拆解立体玩具',
+                '孩子能从不同角度观察和理解空间'
+            ],
+
+            // 体育运动
+            gross: [
+                '孩子的大肌肉运动能力发展良好',
+                '孩子能熟练地进行跑、跳、投掷等活动',
+                '孩子的体能充沛，能进行较长时间运动',
+                '孩子在运动中表现出较好的身体控制'
+            ],
+            fine: [
+                '孩子的手部精细动作发展良好',
+                '孩子能完成串珠子、系扣子等精细动作',
+                '孩子的书写和绘画线条流畅',
+                '孩子能控制小肌肉完成精细操作'
+            ],
+            balance: [
+                '孩子能在移动中保持身体平衡',
+                '孩子能单脚站立并保持稳定',
+                '孩子能完成需要平衡感的动作',
+                '孩子在运动中表现出良好的协调性'
+            ],
+            flexibility: [
+                '孩子的身体柔韧性较好',
+                '孩子能轻松完成拉伸动作',
+                '孩子的关节活动范围较大',
+                '孩子在运动中能展现较好的柔韧性'
+            ],
+            endurance: [
+                '孩子能进行持续的身体活动而不易疲劳',
+                '孩子的体能耐力较好',
+                '孩子能坚持完成较长时间的运动',
+                '孩子在体育活动中表现出较好的持久性'
+            ],
+            body: [
+                '孩子对身体的各部位有清晰认识',
+                '孩子能感知自己的身体位置和状态',
+                '孩子能控制身体的各个部位协调运动',
+                '孩子对身体感觉有较好的敏感性'
+            ],
+            reaction: [
+                '孩子对信号的反应迅速准确',
+                '孩子的反应时间较短',
+                '孩子能快速调整动作应对变化',
+                '孩子在游戏中能快速做出决策'
+            ],
+            sportsInterest: [
+                '孩子对各种体育活动表现出兴趣',
+                '孩子喜欢观看体育比赛和节目',
+                '孩子主动参与户外运动和游戏',
+                '孩子有自己的体育爱好和特长'
+            ],
+
+            // 科技素养
+            programming: [
+                '孩子对电脑或平板设备操作熟练',
+                '孩子能理解简单的编程逻辑概念',
+                '孩子喜欢通过游戏学习新技能',
+                '孩子能设计简单的步骤流程'
+            ],
+            decomposition: [
+                '孩子能将复杂任务分解为简单步骤',
+                '孩子能理解整体与部分的关系',
+                '孩子能逐步完成复杂任务的各个部分',
+                '孩子能将大问题拆分为小问题解决'
+            ],
+            digital: [
+                '孩子能安全合理地使用电子设备',
+                '孩子了解网络世界与现实世界的区别',
+                '孩子能辨别数字内容的真实性',
+                '孩子有良好的数字公民意识'
+            ],
+            logic: [
+                '孩子能进行简单的推理和判断',
+                '孩子能发现事物之间的逻辑关系',
+                '孩子的思考过程条理清晰',
+                '孩子能运用逻辑解决日常问题'
+            ],
+            techUsage: [
+                '孩子能独立操作常用的电子设备',
+                '孩子能使用常用软件和应用程序',
+                '孩子对新技术表现出学习兴趣',
+                '孩子能探索设备的新功能'
+            ],
+            data: [
+                '孩子能整理和归类收集到的信息',
+                '孩子能从数据中发现规律和趋势',
+                '孩子能用图表等方式展示数据',
+                '孩子对数量和统计有初步理解'
+            ],
+            system: [
+                '孩子能理解系统各部分的相互作用',
+                '孩子能从整体角度思考问题',
+                '孩子能理解规则和流程的重要性',
+                '孩子能发现系统中的问题和改进点'
+            ],
+
+            // 社交情感
+            communication: [
+                '孩子能主动与他人进行交流',
+                '孩子能清晰地表达自己的想法',
+                '孩子在对话中能倾听并回应他人',
+                '孩子能运用恰当的方式表达情感'
+            ],
+            teamwork: [
+                '孩子愿意参与团队合作活动',
+                '孩子能在团队中承担自己的责任',
+                '孩子能与他人配合完成共同目标',
+                '孩子尊重团队中其他成员的贡献'
+            ],
+            empathy: [
+                '孩子能感知他人的情绪变化',
+                '孩子能理解他人的感受和处境',
+                '孩子会对他人的困难表示关心',
+                '孩子能站在他人角度思考问题'
+            ],
+            emotion: [
+                '孩子能识别和命名自己的情绪',
+                '孩子能调节和控制自己的情绪',
+                '孩子在情绪激动时能冷静下来',
+                '孩子能用健康的方式表达情绪'
+            ],
+            conflict: [
+                '孩子能用和平方式解决与他人的分歧',
+                '孩子在冲突中能听取多方意见',
+                '孩子能寻找双赢的解决方案',
+                '孩子能从冲突中学习并成长'
+            ],
+            socialAwareness: [
+                '孩子能理解并遵守社会规则',
+                '孩子能感知社会环境的变化',
+                '孩子关心社区和公共事务',
+                '孩子有良好的公民意识'
+            ],
+            selfAwareness: [
+                '孩子对自己的优点和不足有认识',
+                '孩子能客观评价自己的表现',
+                '孩子了解自己的兴趣和特长',
+                '孩子有清晰的自我认同感'
+            ],
+
+            // 音乐韵律
+            rhythm: [
+                '孩子能跟随音乐节奏进行活动',
+                '孩子能感知音乐中的节奏变化',
+                '孩子的身体能自然地配合音乐节拍',
+                '孩子能打简单的节拍'
+            ],
+            pitch: [
+                '孩子能分辨音高的差异',
+                '孩子唱歌时音准较好',
+                '孩子能模仿简单的旋律',
+                '孩子对音高变化敏感'
+            ],
+            musicMemory: [
+                '孩子能记住听过的歌曲或旋律',
+                '孩子能复述学过的歌词',
+                '孩子对熟悉的音乐有记忆反应',
+                '孩子能识别曾经听过的音乐'
+            ],
+            singing: [
+                '孩子喜欢唱歌并积极参与',
+                '孩子的歌声有表现力和感染力',
+                '孩子能控制音量和音色',
+                '孩子愿意在他人面前表演歌曲'
+            ],
+            instrument: [
+                '孩子对乐器表现出兴趣和好奇',
+                '孩子愿意学习演奏乐器',
+                '孩子能辨别不同乐器的声音',
+                '孩子喜欢敲打或弹奏乐器'
+            ],
+            musicExpression: [
+                '孩子能用音乐表达情感和想法',
+                '孩子能根据音乐想象故事情节',
+                '孩子在音乐中能自由地表达',
+                '孩子能通过音乐丰富游戏和活动'
+            ],
+            sound: [
+                '孩子对各种声音敏感并能辨别',
+                '孩子能识别自然界中的不同声音',
+                '孩子能分辨乐音和噪音',
+                '孩子对声音的来源有判断能力'
+            ],
+
+            // 语言发展
+            vocabulary: [
+                '孩子的词汇量随着年龄增长而增加',
+                '孩子能正确使用新学的词汇',
+                '孩子能理解并运用丰富的形容词',
+                '孩子能使用适当的词汇描述事物'
+            ],
+            grammar: [
+                '孩子能正确使用简单的语法结构',
+                '孩子的语句组织越来越完整',
+                '孩子能使用复句表达复杂意思',
+                '孩子的语言表达符合语法规范'
+            ],
+            fluency: [
+                '孩子的表达流畅自然',
+                '孩子在说话时较少停顿或重复',
+                '孩子能连续讲述较长的事件',
+                '孩子的语言输出流畅有节奏'
+            ],
+            listening: [
+                '孩子能认真倾听他人的讲话',
+                '孩子能理解并遵循语言指令',
+                '孩子能从对话中提取关键信息',
+                '孩子在嘈杂环境中也能专注倾听'
+            ],
+            readingAbility: [
+                '孩子对文字和阅读材料有兴趣',
+                '孩子能认读基本的汉字',
+                '孩子能流利地朗读短文',
+                '孩子能理解阅读材料的主要内容'
+            ],
+            writing: [
+                '孩子愿意用书写方式表达',
+                '孩子的笔画工整规范',
+                '孩子能书写自己的名字',
+                '孩子能用文字记录想法'
+            ],
+            bilingual: [
+                '孩子对学习第二语言有兴趣',
+                '孩子能使用简单的外语表达',
+                '孩子能理解简单的外语指令',
+                '孩子对不同语言和文化有好奇心'
+            ],
+
+            // 逻辑思维
+            pattern: [
+                '孩子能发现事物排列的规律',
+                '孩子能预测接下来的图案或顺序',
+                '孩子能创造出重复的图案',
+                '孩子能从复杂中找到规律'
+            ],
+            sequential: [
+                '孩子能理解先后顺序的概念',
+                '孩子能按照步骤完成任务',
+                '孩子能讲述事件的发展顺序',
+                '孩子理解"首先、然后、最后"'
+            ],
+            causeEffect: [
+                '孩子能理解行为与后果的关系',
+                '孩子能解释事情发生的原因',
+                '孩子能预见行为可能带来的结果',
+                '孩子能从经验中学习'
+            ],
+            classification: [
+                '孩子能根据特征对事物进行分类',
+                '孩子能说明分类的标准',
+                '孩子能在不同分类间转换',
+                '孩子理解同类别事物的共同点'
+            ],
+            evaluation: [
+                '孩子能对事物进行简单的评价',
+                '孩子能说出选择某物的理由',
+                '孩子能比较不同方案的优劣',
+                '孩子能提出改进建议'
+            ],
+            critical: [
+                '孩子会思考问题是否正确或合理',
+                '孩子会提出疑问和不同的看法',
+                '孩子不盲目接受他人的观点',
+                '孩子能从多角度思考问题'
+            ],
+            abstract: [
+                '孩子能理解简单的比喻和象征',
+                '孩子能从具体事物中抽出共同特征',
+                '孩子能理解简单的符号代表意义',
+                '孩子能进行简单的推理'
+            ],
+
+            // 领导力
+            organization: [
+                '孩子能合理安排自己的活动',
+                '孩子能组织小组活动并分配任务',
+                '孩子能整理和规划学习时间',
+                '孩子能将混乱的材料整理有序'
+            ],
+            decision: [
+                '孩子在面临选择时能做出决定',
+                '孩子能分析利弊后做决策',
+                '孩子愿意为自己的决定负责',
+                '孩子在紧急情况下能快速决策'
+            ],
+            responsibility: [
+                '孩子能完成自己承诺的事情',
+                '孩子勇于承担自己的错误',
+                '孩子对自己的行为负责',
+                '孩子有强烈的责任感'
+            ],
+            influence: [
+                '孩子的想法能影响和说服他人',
+                '孩子能以积极方式带动周围人',
+                '孩子的话语对他人有分量',
+                '孩子能成为群体的意见领袖'
+            ],
+            risk: [
+                '孩子愿意尝试新事物和挑战',
+                '孩子不怕失败，敢于冒险',
+                '孩子能评估风险后再行动',
+                '孩子从冒险中获得成长'
+            ],
+            goalSetting: [
+                '孩子能设定短期和长期目标',
+                '孩子能为实现目标制定计划',
+                '孩子坚持努力直到达成目标',
+                '孩子会根据反馈调整目标'
+            ],
+            motivation: [
+                '孩子有强烈的内在学习动力',
+                '孩子不需要外部奖励也能积极行动',
+                '孩子能自我激励克服困难',
+                '孩子对学习和生活有热情'
+            ],
+            teamLeadership: [
+                '孩子能在团队中发挥领导作用',
+                '孩子能协调团队成员的分歧',
+                '孩子能合理分配团队任务',
+                '孩子能带领团队达成目标'
+            ],
+
+            // 自律专注
+            focus: [
+                '孩子能长时间专注于感兴趣的任务',
+                '孩子在学习时不易分心',
+                '孩子能排除干扰完成任务',
+                '孩子能持续关注一个主题'
+            ],
+            impulse: [
+                '孩子能在行动前先思考',
+                '孩子能控制冲动行为',
+                '孩子在要求等待时能耐心',
+                '孩子能抵制诱惑和干扰'
+            ],
+            timeMgmt: [
+                '孩子有初步的时间概念',
+                '孩子能估计任务所需时间',
+                '孩子能在规定时间内完成任务',
+                '孩子能合理分配时间'
+            ],
+            discipline: [
+                '孩子能自觉遵守规则和约定',
+                '孩子不需要监督也能完成任务',
+                '孩子有坚持完成任务的毅力',
+                '孩子对自我要求严格'
+            ],
+            delayed: [
+                '孩子能为更大的奖励等待',
+                '孩子理解"延迟满足"的概念',
+                '孩子能控制即时的欲望',
+                '孩子愿意为长远目标努力'
+            ],
+            emotionReg: [
+                '孩子能调节负面情绪',
+                '孩子在压力下保持冷静',
+                '孩子能从挫折中快速恢复',
+                '孩子有积极的情绪状态'
+            ],
+            metacognition: [
+                '孩子能思考自己的思维过程',
+                '孩子了解自己擅长的学习方式',
+                '孩子能评估自己的理解程度',
+                '孩子有学习策略的意识'
+            ],
+
+            // 想象力
+            fantasy: [
+                '孩子能进行丰富的想象和幻想',
+                '孩子的想象力超越现实限制',
+                '孩子喜欢创造虚构的世界和角色',
+                '孩子的思维充满创意和惊喜'
+            ],
+            curiosity: [
+                '孩子对未知事物充满好奇',
+                '孩子喜欢探索和学习新知识',
+                '孩子会主动寻找问题的答案',
+                '孩子的求知欲强烈'
+            ],
+            exploration: [
+                '孩子喜欢探索新环境和新事物',
+                '孩子敢于尝试不同的方法',
+                '孩子能从探索中获得乐趣',
+                '孩子有冒险和发现的精神'
+            ],
+            questioning: [
+                '孩子善于提出有意义的问题',
+                '孩子不满足于表面的答案',
+                '孩子会深入追问"为什么"',
+                '孩子的问题能引导新的发现'
+            ],
+            hypothesis: [
+                '孩子能提出假设和预测',
+                '孩子会设计简单的实验验证想法',
+                '孩子能根据证据调整假设',
+                '孩子用科学方式思考问题'
+            ],
+            openness: [
+                '孩子愿意接受不同的观点',
+                '孩子能容忍不确定性和模糊性',
+                '孩子愿意尝试非常规的方法',
+                '孩子对新想法保持开放态度'
+            ],
+            storytelling: [
+                '孩子能编造有趣的故事',
+                '孩子的故事有完整的情节',
+                '孩子能赋予角色鲜明的特点',
+                '孩子喜欢创作和分享故事'
+            ],
+            novel: [
+                '孩子能想出独特的解决方案',
+                '孩子的想法新颖独特',
+                '孩子能打破常规思维',
+                '孩子能从不同角度看待问题'
+            ],
+
+            // 生活自理
+            selfCare: [
+                '孩子能独立完成个人清洁',
+                '孩子能自己穿脱衣物',
+                '孩子能独立进食',
+                '孩子能管理好自己的物品'
+            ],
+            planning: [
+                '孩子能计划自己的日常活动',
+                '孩子能安排学习和休息时间',
+                '孩子能准备所需物品',
+                '孩子有计划地完成任务'
+            ],
+            money: [
+                '孩子有初步的金钱概念',
+                '孩子能认识不同面值货币',
+                '孩子知道物品需要用钱购买',
+                '孩子有节约使用零花钱的意识'
+            ],
+            safety: [
+                '孩子有基本的安全意识',
+                '孩子了解危险物品和行为',
+                '孩子知道如何求助',
+                '孩子能识别潜在的安全隐患'
+            ],
+            adaptation: [
+                '孩子能适应新环境',
+                '孩子能应对日常变化',
+                '孩子在新情况下能保持冷静',
+                '孩子能调整自己适应规则'
+            ],
+            independent: [
+                '孩子能独立解决生活中的小问题',
+                '孩子遇到困难会先尝试自己解决',
+                '孩子能从错误中学习',
+                '孩子有独立思考和行动的能力'
+            ],
+            etiquette: [
+                '孩子懂基本的礼貌用语',
+                '孩子能遵守社交礼仪规范',
+                '孩子在公共场合表现得体',
+                '孩子尊重他人并友好相处'
+            ]
+        };
+
+        // 生成问题的函数
+        function generateQuestions(dimensionId, dimensionName, count) {
+            const templates = QUESTION_TEMPLATES[dimensionId] || [];
+            return templates.slice(0, count).map((text, index) => ({
+                id: `${dimensionId}_q${index + 1}`,
+                text: text,
+                dimension: dimensionName,
+                dimensionId: dimensionId,
+                options: [
+                    { value: 1, label: '完全不同意' },
+                    { value: 2, label: '不同意' },
+                    { value: 3, label: '一般' },
+                    { value: 4, label: '同意' },
+                    { value: 5, label: '完全同意' }
+                ]
+            }));
+        }
+
+        // ============================================
+        // 应用状态
+        // ============================================
+        const AppState = {
+            currentPage: 'home',
+            childInfo: {
+                name: '',
+                age: 8,
+                gender: 'male'
+            },
+            selectedCategories: [],
+            currentQuestionIndex: 0,
+            answers: {},
+            startTime: null,
+            testDuration: 0,
+            results: null,
+            history: []
+        };
+
+        // ============================================
+        // 页面导航
+        // ============================================
+        function navigateTo(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            document.getElementById(`page-${page}`).classList.add('active');
+            document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+
+            AppState.currentPage = page;
+
+            if (page === 'history') {
+                renderHistory();
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        // 哈希路由
+        function handleHashRoute() {
+            const hash = window.location.hash.slice(1) || 'home';
+            navigateTo(hash);
+        }
+
+        // ============================================
+        // 主题切换
+        // ============================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+
+        // ============================================
+        // 分类卡片渲染
+        // ============================================
+        function renderCategoryCards() {
+            const grid = document.getElementById('categoryGrid');
+            grid.innerHTML = CATEGORIES.map((cat, index) => `
+                <div class="category-card animate-in stagger-${(index % 6) + 1}"
+                     style="--card-gradient: ${cat.gradient}; --card-bg: ${cat.color}20;"
+                     onclick="navigateTo('assessment')">
+                    <div class="icon">${cat.icon}</div>
+                    <h3>${cat.name}</h3>
+                    <p class="subtitle">${cat.subtitle}</p>
+                    <div class="dimensions">
+                        ${cat.dimensions.slice(0, 4).map(d => `<span class="dimension-tag">${d.name}</span>`).join('')}
+                        ${cat.dimensions.length > 4 ? `<span class="dimension-tag">+${cat.dimensions.length - 4}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCategorySelect() {
+            const grid = document.getElementById('categorySelect');
+            grid.innerHTML = CATEGORIES.map(cat => `
+                <div class="category-select-item" data-id="${cat.id}" onclick="toggleCategorySelect('${cat.id}')">
+                    <div class="checkbox"></div>
+                    <span>${cat.icon}</span>
+                    <span>${cat.name}</span>
+                </div>
+            `).join('');
+        }
+
+        function toggleCategorySelect(categoryId) {
+            const item = document.querySelector(`[data-id="${categoryId}"]`);
+            const isSelected = item.classList.contains('selected');
+
+            if (isSelected) {
+                item.classList.remove('selected');
+                AppState.selectedCategories = AppState.selectedCategories.filter(id => id !== categoryId);
+            } else {
+                // 最多选择5个类别
+                if (AppState.selectedCategories.length >= 5) {
+                    alert('最多只能选择5个类别进行评估');
+                    return;
+                }
+                item.classList.add('selected');
+                AppState.selectedCategories.push(categoryId);
+            }
+        }
+
+        // ============================================
+        // 评估设置
+        // ============================================
+        function selectGender(gender) {
+            document.querySelectorAll('.gender-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.gender === gender);
+            });
+            AppState.childInfo.gender = gender;
+        }
+
+        function startAssessment() {
+            const name = document.getElementById('childName').value.trim();
+            const age = parseInt(document.getElementById('childAge').value);
+
+            if (!name) {
+                alert('请输入孩子姓名');
+                return;
+            }
+
+            if (!age || age < 3 || age > 18) {
+                alert('请输入有效的年龄（3-18岁）');
+                return;
+            }
+
+            if (AppState.selectedCategories.length === 0) {
+                alert('请至少选择一个评估类别');
+                return;
+            }
+
+            AppState.childInfo.name = name;
+            AppState.childInfo.age = age;
+
+            // 初始化测试状态
+            AppState.currentQuestionIndex = 0;
+            AppState.answers = {};
+            AppState.startTime = Date.now();
+
+            // 构建问题列表
+            buildQuestionList();
+
+            // 跳转到测试页面
+            navigateTo('test');
+            renderQuestion();
+            startTimer();
+        }
+
+        // 构建扁平的问题列表
+        function buildQuestionList() {
+            window.questionList = [];
+            AppState.selectedCategories.forEach(catId => {
+                const category = CATEGORIES.find(c => c.id === catId);
+                if (category) {
+                    category.dimensions.forEach(dim => {
+                        dim.questions.forEach(q => {
+                            window.questionList.push({
+                                ...q,
+                                categoryId: catId,
+                                categoryName: category.name,
+                                categoryColor: category.color
+                            });
+                        });
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // 测试页面
+        // ============================================
+        function renderQuestion() {
+            const question = window.questionList[AppState.currentQuestionIndex];
+            if (!question) return;
+
+            document.getElementById('questionCategory').textContent = question.categoryName;
+            document.getElementById('questionCategory').style.background = question.categoryColor;
+            document.getElementById('questionText').textContent = question.text;
+            document.getElementById('questionDimension').textContent = `维度：${question.dimension}`;
+
+            // 更新进度
+            const progress = ((AppState.currentQuestionIndex + 1) / window.questionList.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent =
+                `问题 ${AppState.currentQuestionIndex + 1} / ${window.questionList.length}`;
+
+            // 恢复已选择的答案
+            const savedAnswer = AppState.answers[question.id];
+            document.querySelectorAll('.likert-option').forEach(opt => {
+                opt.classList.toggle('selected', savedAnswer && parseInt(opt.dataset.value) === savedAnswer);
+            });
+
+            // 更新按钮
+            document.getElementById('prevBtn').style.visibility =
+                AppState.currentQuestionIndex === 0 ? 'hidden' : 'visible';
+
+            const isLast = AppState.currentQuestionIndex === window.questionList.length - 1;
+            document.getElementById('nextBtn').innerHTML = isLast
+                ? '完成评估 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '下一题 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>';
+
+            // 重置动画
+            const card = document.getElementById('questionCard');
+            card.style.animation = 'none';
+            card.offsetHeight;
+            card.style.animation = 'slideUp 0.4s ease';
+
+            // 保存进度
+            saveProgress();
+        }
+
+        function selectLikert(value) {
+            const question = window.questionList[AppState.currentQuestionIndex];
+            AppState.answers[question.id] = value;
+
+            document.querySelectorAll('.likert-option').forEach(opt => {
+                opt.classList.toggle('selected', parseInt(opt.dataset.value) === value);
+            });
+
+            // 自动进入下一题
+            setTimeout(() => {
+                if (AppState.currentQuestionIndex < window.questionList.length - 1) {
+                    nextQuestion();
+                } else {
+                    submitAssessment();
+                }
+            }, 300);
+        }
+
+        function nextQuestion() {
+            const question = window.questionList[AppState.currentQuestionIndex];
+            if (!AppState.answers[question.id]) {
+                alert('请选择一个答案');
+                return;
+            }
+
+            if (AppState.currentQuestionIndex < window.questionList.length - 1) {
+                AppState.currentQuestionIndex++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (AppState.currentQuestionIndex > 0) {
+                AppState.currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        // ============================================
+        // 计时器
+        // ============================================
+        let timerInterval;
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - AppState.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('timerDisplay').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            AppState.testDuration = Math.floor((Date.now() - AppState.startTime) / 1000);
+        }
+
+        // ============================================
+        // 进度保存
+        // ============================================
+        function saveProgress() {
+            const progressData = {
+                childInfo: AppState.childInfo,
+                selectedCategories: AppState.selectedCategories,
+                currentQuestionIndex: AppState.currentQuestionIndex,
+                answers: AppState.answers,
+                startTime: AppState.startTime
+            };
+            localStorage.setItem('assessment_progress', JSON.stringify(progressData));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('assessment_progress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                // 检查是否在24小时内
+                if (Date.now() - data.startTime < 24 * 60 * 60 * 1000) {
+                    return data;
+                }
+            }
+            return null;
+        }
+
+        // ============================================
+        // 提交评估
+        // ============================================
+        function submitAssessment() {
+            stopTimer();
+
+            // 计算结果
+            const results = calculateResults();
+            AppState.results = results;
+
+            // 保存到历史记录
+            saveToHistory(results);
+
+            // 清除进度
+            localStorage.removeItem('assessment_progress');
+
+            // 显示结果
+            navigateTo('result');
+            renderResults(results);
+        }
+
+        function calculateResults() {
+            const categoryScores = {};
+            const dimensionScores = {};
+
+            AppState.selectedCategories.forEach(catId => {
+                const category = CATEGORIES.find(c => c.id === catId);
+                if (!category) return;
+
+                let categoryTotal = 0;
+                let categoryMax = 0;
+                const dimensionTotals = {};
+
+                category.dimensions.forEach(dim => {
+                    let dimTotal = 0;
+                    let dimMax = 0;
+
+                    dim.questions.forEach(q => {
+                        const answer = AppState.answers[q.id];
+                        if (answer) {
+                            dimTotal += answer;
+                            dimMax += 5;
+                        }
+                    });
+
+                    const dimScore = dimMax > 0 ? (dimTotal / dimMax) * 100 : 0;
+                    dimensionScores[`${catId}_${dim.id}`] = dimScore;
+                    dimensionTotals[dim.id] = {
+                        score: dimScore,
+                        total: dimTotal,
+                        max: dimMax
+                    };
+
+                    categoryTotal += dimTotal;
+                    categoryMax += dimMax;
+                });
+
+                const categoryScore = categoryMax > 0 ? (categoryTotal / categoryMax) * 100 : 0;
+                categoryScores[catId] = {
+                    score: categoryScore,
+                    total: categoryTotal,
+                    max: categoryMax,
+                    dimensions: dimensionTotals
+                };
+            });
+
+            // 计算综合得分
+            const allScores = Object.values(categoryScores).map(c => c.score);
+            const overallScore = allScores.length > 0
+                ? allScores.reduce((a, b) => a + b, 0) / allScores.length
+                : 0;
+
+            return {
+                id: generateId(),
+                date: new Date().toISOString(),
+                childName: AppState.childInfo.name,
+                age: AppState.childInfo.age,
+                gender: AppState.childInfo.gender,
+                categories: AppState.selectedCategories,
+                categoryScores,
+                dimensionScores,
+                overall: overallScore,
+                duration: AppState.testDuration,
+                recommendations: generateRecommendations(categoryScores)
+            };
+        }
+
+        function generateId() {
+            return 'result_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // ============================================
+        // 生成建议
+        // ============================================
+        function generateRecommendations(categoryScores) {
+            const recommendations = [];
+
+            // 找出最强项
+            const sortedCategories = Object.entries(categoryScores)
+                .sort((a, b) => b[1].score - a[1].score);
+
+            const topCategory = CATEGORIES.find(c => c.id === sortedCategories[0][0]);
+            if (topCategory && sortedCategories[0][1].score > 70) {
+                recommendations.push({
+                    type: 'strength',
+                    title: `优势领域：${topCategory.name}`,
+                    content: `您的孩子在${topCategory.name}方面表现突出，得分达到${sortedCategories[0][1].score.toFixed(0)}分。建议继续深化这一领域的培养，为孩子提供更多相关的发展机会和资源。`,
+                    category: topCategory
+                });
+            }
+
+            // 找出需改进的项
+            const bottomCategory = CATEGORIES.find(c => c.id === sortedCategories[sortedCategories.length - 1][0]);
+            if (bottomCategory && sortedCategories[sortedCategories.length - 1][1].score < 60) {
+                recommendations.push({
+                    type: 'improvement',
+                    title: `提升建议：${bottomCategory.name}`,
+                    content: `${bottomCategory.name}是孩子目前相对薄弱的领域。建议通过趣味性的方式逐步引导，例如通过游戏、绘本或实践活动来提高孩子在这一方面的兴趣和能力。`,
+                    category: bottomCategory
+                });
+            }
+
+            // 个性化建议
+            if (sortedCategories[0][1].score - sortedCategories[sortedCategories.length - 1][1].score > 30) {
+                recommendations.push({
+                    type: 'balance',
+                    title: '均衡发展建议',
+                    content: '孩子在不同领域的发展存在较大差异。建议在保持优势领域的同时，适当增加薄弱领域的练习时间，促进更全面的发展。',
+                    category: null
+                });
+            }
+
+            // 年龄相关建议
+            if (AppState.childInfo.age < 10) {
+                recommendations.push({
+                    type: 'age',
+                    title: '早期发展重点',
+                    content: '这个年龄段是培养学习兴趣和生活习惯的关键期。建议通过游戏和互动的方式进行学习，避免给孩子过大压力，让他们在快乐中成长。',
+                    category: null
+                });
+            } else {
+                recommendations.push({
+                    type: 'age',
+                    title: '进阶发展建议',
+                    content: '这个年龄段可以开始培养更系统的学习方法和自我管理能力。建议与孩子一起制定学习计划，培养他们的独立思考和问题解决能力。',
+                    category: null
+                });
+            }
+
+            return recommendations;
+        }
+
+        // ============================================
+        // 渲染结果
+        // ============================================
+        function renderResults(results) {
+            document.getElementById('resultChildName').textContent = `${results.childName}的潜能评估报告`;
+            document.getElementById('resultDate').textContent = `评估日期：${new Date(results.date).toLocaleDateString('zh-CN')}`;
+
+            // 综合百分位数
+            document.getElementById('overallPercentile').textContent = Math.round(results.overall);
+
+            // 能力等级
+            const level = getLevel(results.overall);
+            document.getElementById('levelDescription').textContent = level.description;
+            document.getElementById('levelIndicator').innerHTML = `
+                <span class="level-badge ${level.class}">${level.label}</span>
+                <span>${level.suggestion}</span>
+            `;
+
+            // 渲染雷达图
+            renderRadarChart(results);
+
+            // 渲染分类图表
+            renderCategoryCharts(results);
+
+            // 渲染热力图
+            renderHeatmap(results);
+
+            // 渲染建议
+            renderRecommendations(results.recommendations);
+
+            // 高分彩带效果
+            if (results.overall >= 80) {
+                showConfetti();
+            }
+        }
+
+        function getLevel(score) {
+            if (score >= 85) return { label: '卓越', class: 'excellent', description: '综合能力表现卓越，在多个领域展现出超常的潜力', suggestion: '建议提供更具挑战性的发展机会' };
+            if (score >= 70) return { label: '优秀', class: 'good', description: '综合能力表现优秀，在多个领域展现出较强的潜力', suggestion: '建议继续强化优势领域' };
+            if (score >= 50) return { label: '良好', class: 'average', description: '综合能力表现良好，具有一定的发展潜力', suggestion: '建议均衡发展各领域能力' };
+            return { label: '需加强', class: 'needs-improvement', description: '综合能力有较大提升空间，需要更多关注和培养', suggestion: '建议针对薄弱环节加强训练' };
+        }
+
+        function renderRadarChart(results) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+
+            if (window.radarChart) {
+                window.radarChart.destroy();
+            }
+
+            const labels = AppState.selectedCategories.map(catId => {
+                const cat = CATEGORIES.find(c => c.id === catId);
+                return cat.name;
+            });
+
+            const data = AppState.selectedCategories.map(catId => {
+                return results.categoryScores[catId]?.score || 0;
+            });
+
+            window.radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '能力得分',
+                        data: data,
+                        fill: true,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: '#6366f1',
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#6366f1',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20,
+                                font: { size: 10 }
+                            },
+                            pointLabels: {
+                                font: { size: 11, weight: '500' }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    animation: {
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function renderCategoryCharts(results) {
+            const container = document.getElementById('categoryCharts');
+            container.innerHTML = '';
+
+            AppState.selectedCategories.forEach(catId => {
+                const category = CATEGORIES.find(c => c.id === catId);
+                const scores = results.categoryScores[catId];
+
+                if (!category || !scores) return;
+
+                const card = document.createElement('div');
+                card.className = 'result-card';
+                card.innerHTML = `
+                    <h3>
+                        <span style="font-size: 1.5rem;">${category.icon}</span>
+                        ${category.name}
+                        <span style="margin-left: auto; font-size: 1.25rem; font-weight: 700; color: ${category.color};">
+                            ${scores.score.toFixed(0)}分
+                        </span>
+                    </h3>
+                    <div class="dimension-scores">
+                        ${category.dimensions.map(dim => {
+                            const key = `${catId}_${dim.id}`;
+                            const score = results.dimensionScores[key] || 0;
+                            return `
+                                <div class="dimension-score-item">
+                                    <span class="name">${dim.name}</span>
+                                    <div class="bar-container">
+                                        <div class="bar" style="width: ${score}%; background: ${getScoreColor(score)};"></div>
+                                    </div>
+                                    <span class="value">${score.toFixed(0)}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function getScoreColor(score) {
+            if (score >= 80) return 'linear-gradient(90deg, #10b981, #34d399)';
+            if (score >= 60) return 'linear-gradient(90deg, #3b82f6, #60a5fa)';
+            if (score >= 40) return 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+            return 'linear-gradient(90deg, #ef4444, #f87171)';
+        }
+
+        function renderHeatmap(results) {
+            const container = document.getElementById('heatmap');
+            const headerContainer = document.getElementById('heatmapHeader');
+
+            // 选择最多6个类别进行热力图展示
+            const displayCategories = AppState.selectedCategories.slice(0, 6);
+            headerContainer.innerHTML = displayCategories.map(catId => {
+                const cat = CATEGORIES.find(c => c.id === catId);
+                return `<span style="width: 30px; text-align: center; font-size: 0.625rem;">${cat.icon}</span>`;
+            }).join('');
+
+            // 收集所有维度
+            const allDimensions = new Set();
+            displayCategories.forEach(catId => {
+                const cat = CATEGORIES.find(c => c.id === catId);
+                cat.dimensions.forEach(dim => allDimensions.add(dim.id));
+            });
+
+            const dimensionArray = Array.from(allDimensions).slice(0, 8);
+
+            container.innerHTML = dimensionArray.map(dimId => {
+                const dimName = getDimensionName(dimId);
+                let cells = displayCategories.map(catId => {
+                    const key = `${catId}_${dimId}`;
+                    const score = results.dimensionScores[key] || 0;
+                    return `<div class="heatmap-cell" style="background: ${getHeatmapColor(score)};" title="${score.toFixed(0)}分"></div>`;
+                }).join('');
+
+                return `
+                    <div class="heatmap-row">
+                        <span class="heatmap-label">${dimName}</span>
+                        ${cells}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getDimensionName(dimId) {
+            for (const cat of CATEGORIES) {
+                const dim = cat.dimensions.find(d => d.id === dimId);
+                if (dim) return dim.name;
+            }
+            return dimId;
+        }
+
+        function getHeatmapColor(score) {
+            if (score >= 80) return '#10b981';
+            if (score >= 60) return '#84cc16';
+            if (score >= 40) return '#f59e0b';
+            return '#ef4444';
+        }
+
+        function renderRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = recommendations.map(rec => `
+                <div class="recommendation-item">
+                    <h4>${rec.title}</h4>
+                    <p>${rec.content}</p>
+                </div>
+            `).join('');
+        }
+
+        // ============================================
+        // 历史记录
+        // ============================================
+        function saveToHistory(results) {
+            const history = JSON.parse(localStorage.getItem('assessment_history') || '[]');
+            history.unshift(results);
+            // 只保留最近10条记录
+            if (history.length > 10) history.pop();
+            localStorage.setItem('assessment_history', JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('assessment_history') || '[]');
+            const container = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+                            <rect x="9" y="3" width="6" height="4" rx="1"/>
+                            <path d="M9 14l2 2 4-4"/>
+                        </svg>
+                        <h3>暂无历史记录</h3>
+                        <p>完成评估后，您可以看到评估历史</p>
+                        <button class="btn btn-primary" onclick="navigateTo('assessment')" style="margin-top: 1rem;">
+                            开始评估
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = history.map((item, index) => {
+                const level = getLevel(item.overall);
+                return `
+                    <div class="history-item" onclick="viewHistoryResult(${index})">
+                        <div class="history-info">
+                            <h4>${item.childName}</h4>
+                            <p>${new Date(item.date).toLocaleDateString('zh-CN')} · ${item.categories.length}个类别 · 约${Math.ceil(item.duration / 60)}分钟</p>
+                        </div>
+                        <div class="history-score">
+                            <div class="score" style="color: ${item.overall >= 70 ? '#10b981' : item.overall >= 50 ? '#f59e0b' : '#ef4444'};">
+                                ${item.overall.toFixed(0)}
+                            </div>
+                            <div class="date">综合得分</div>
+                        </div>
+                        <div class="history-actions">
+                            <button class="btn-icon" onclick="event.stopPropagation(); deleteHistory(${index})" title="删除">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function viewHistoryResult(index) {
+            const history = JSON.parse(localStorage.getItem('assessment_history') || '[]');
+            const result = history[index];
+            if (!result) return;
+
+            // 恢复状态
+            AppState.selectedCategories = result.categories;
+            AppState.results = result;
+
+            navigateTo('result');
+            renderResults(result);
+        }
+
+        function deleteHistory(index) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+
+            const history = JSON.parse(localStorage.getItem('assessment_history') || '[]');
+            history.splice(index, 1);
+            localStorage.setItem('assessment_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // ============================================
+        // 导出功能
+        // ============================================
+        function exportPDF() {
+            window.print();
+        }
+
+        function exportJSON() {
+            const data = JSON.stringify(AppState.results, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${AppState.results.childName}_评估报告_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function shareResult() {
+            const shareData = {
+                n: AppState.results.childName,
+                a: AppState.results.age,
+                o: Math.round(AppState.results.overall),
+                c: AppState.selectedCategories.map(id => {
+                    const cat = CATEGORIES.find(c => c.id === id);
+                    return cat ? cat.name[0] : '';
+                }).join('')
+            };
+
+            const code = btoa(JSON.stringify(shareData));
+            document.getElementById('shareCode').textContent = code;
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('shareModal').classList.remove('active');
+        }
+
+        function copyShareCode() {
+            const code = document.getElementById('shareCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('复制成功！');
+            });
+        }
+
+        // ============================================
+        // 彩带动画
+        // ============================================
+        function showConfetti() {
+            const container = document.getElementById('confettiContainer');
+            const colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(confetti);
+            }
+
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // ============================================
+        // 初始化
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            renderCategoryCards();
+            renderCategorySelect();
+
+            // 检查是否有未完成的评估
+            const savedProgress = loadProgress();
+            if (savedProgress && window.confirm('发现未完成的评估，是否继续？')) {
+                AppState.childInfo = savedProgress.childInfo;
+                AppState.selectedCategories = savedProgress.selectedCategories;
+                AppState.currentQuestionIndex = savedProgress.currentQuestionIndex;
+                AppState.answers = savedProgress.answers;
+                AppState.startTime = savedProgress.startTime;
+
+                // 恢复表单状态
+                document.getElementById('childName').value = savedProgress.childInfo.name;
+                document.getElementById('childAge').value = savedProgress.childInfo.age;
+                selectGender(savedProgress.childInfo.gender);
+
+                savedProgress.selectedCategories.forEach(catId => {
+                    const item = document.querySelector(`[data-id="${catId}"]`);
+                    if (item) item.classList.add('selected');
+                });
+
+                buildQuestionList();
+                navigateTo('test');
+                renderQuestion();
+                startTimer();
+            }
+
+            // 监听哈希变化
+            window.addEventListener('hashchange', handleHashRoute);
+            handleHashRoute();
+        });
+    </script>
+</body>
+</html>
