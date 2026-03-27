@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>儿童潜能多维评估系统 v2.0</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1 class="logo">🌟 儿童潜能评估</h1>
+      </div>
+      <div class="header-right">
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="切换深色模式">
+          <span class="dark-mode-icon">🌙</span>
+        </button>
+        <div class="profile-selector" id="profileSelector">
+          <button class="profile-btn" onclick="toggleProfileDropdown()">
+            <div class="avatar" id="currentAvatar" style="background-color: #4A90D9;">请选择</div>
+            <span class="profile-name" id="currentProfileName">选择儿童</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="profile-list" id="profileList"></div>
+            <div class="profile-actions">
+              <button class="profile-action-btn" onclick="showProfileModal()">➕ 新建档案</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Welcome Screen (no profile selected) -->
+      <section class="page" id="welcomePage">
+        <div class="welcome-container">
+          <div class="welcome-icon">🌟</div>
+          <h2>欢迎使用儿童潜能多维评估系统</h2>
+          <p>通过科学、全面、多维度的评估，发现和发展每个孩子的独特潜能</p>
+          <div class="feature-cards">
+            <div class="feature-card">
+              <div class="feature-icon">👤</div>
+              <h3>多用户支持</h3>
+              <p>支持多个儿童档案管理</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📊</div>
+              <h3>150+维度</h3>
+              <p>全面评估各方面能力</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📈</div>
+              <h3>成长追踪</h3>
+              <p>记录分析成长曲线</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📄</div>
+              <h3>报告生成</h3>
+              <p>专业PDF评估报告</p>
+            </div>
+          </div>
+          <button class="primary-btn large" onclick="showProfileModal()">
+            创建第一个儿童档案
+          </button>
+        </div>
+      </section>
+
+      <!-- Dashboard (profile selected) -->
+      <section class="page hidden" id="dashboardPage">
+        <div class="dashboard-header">
+          <div class="child-info">
+            <div class="avatar-large" id="dashboardAvatar"></div>
+            <div class="child-details">
+              <h2 id="dashboardName"></h2>
+              <p id="dashboardAge"></p>
+            </div>
+          </div>
+          <div class="dashboard-actions">
+            <button class="secondary-btn" onclick="showProfileModal(currentProfile.id)">✏️ 编辑档案</button>
+            <button class="primary-btn" onclick="startAssessment()">🎯 开始评估</button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-info">
+              <span class="stat-value" id="totalAssessments">0</span>
+              <span class="stat-label">评估次数</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info">
+              <span class="stat-value" id="avgScore">0</span>
+              <span class="stat-label">平均得分</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-info">
+              <span class="stat-value" id="latestPercentile">-</span>
+              <span class="stat-label">最新百分位</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-info">
+              <span class="stat-value" id="strengthCount">0</span>
+              <span class="stat-label">优势项</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+          <div class="chart-card">
+            <h3>📈 成长曲线</h3>
+            <div class="chart-container">
+              <canvas id="growthChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>🕸️ 能力雷达图</h3>
+            <div class="chart-container">
+              <canvas id="radarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Results -->
+        <div class="recent-section">
+          <h3>📋 最近评估记录</h3>
+          <div class="results-list" id="resultsList">
+            <p class="no-results">暂无评估记录</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Assessment Mode Selection -->
+      <section class="page hidden" id="modeSelectPage">
+        <div class="page-header">
+          <button class="back-btn" onclick="goToDashboard()">← 返回</button>
+          <h2>选择评估模式</h2>
+        </div>
+        <div class="mode-cards">
+          <div class="mode-card" onclick="selectMode('full')">
+            <div class="mode-icon">🎯</div>
+            <h3>全面评估</h3>
+            <p>评估所有11个大类的150+维度</p>
+            <span class="mode-duration">约 45-60 分钟</span>
+          </div>
+          <div class="mode-card" onclick="selectMode('category')">
+            <div class="mode-icon">📂</div>
+            <h3>分类评估</h3>
+            <p>选择一个或多个类别进行评估</p>
+            <span class="mode-duration">约 15-30 分钟</span>
+          </div>
+          <div class="mode-card" onclick="selectMode('dimensions')">
+            <div class="mode-icon">✨</div>
+            <h3>自定义组合</h3>
+            <p>自由选择特定维度进行评估</p>
+            <span class="mode-duration">时间自定</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Selection -->
+      <section class="page hidden" id="categorySelectPage">
+        <div class="page-header">
+          <button class="back-btn" onclick="goBackToModeSelect()">← 返回</button>
+          <h2>选择评估类别</h2>
+        </div>
+        <div class="category-grid" id="categoryGrid"></div>
+        <div class="selection-actions">
+          <span class="selection-count">已选 <span id="selectedCategoryCount">0</span> 个类别</span>
+          <button class="primary-btn" onclick="startCategoryAssessment()" id="startCategoryBtn" disabled>开始评估</button>
+        </div>
+      </section>
+
+      <!-- Dimension Selection (Custom Mode) -->
+      <section class="page hidden" id="dimensionSelectPage">
+        <div class="page-header">
+          <button class="back-btn" onclick="goBackToModeSelect()">← 返回</button>
+          <h2>选择评估维度</h2>
+        </div>
+        <div class="dimension-controls">
+          <div class="search-box">
+            <input type="text" placeholder="搜索维度..." id="dimensionSearch" oninput="filterDimensions()">
+          </div>
+          <div class="category-filter" id="categoryFilter"></div>
+        </div>
+        <div class="progress-indicator">
+          <div class="progress-bar">
+            <div class="progress-fill" id="dimensionProgress"></div>
+          </div>
+          <span class="progress-text">已选 <span id="selectedDimensionCount">0</span> 个维度</span>
+        </div>
+        <div class="dimension-list" id="dimensionList"></div>
+        <div class="selection-actions">
+          <button class="secondary-btn" onclick="selectAllDimensions()">全选</button>
+          <button class="secondary-btn" onclick="clearDimensionSelection()">清空</button>
+          <button class="primary-btn" onclick="startDimensionAssessment()" id="startDimensionBtn" disabled>开始评估</button>
+        </div>
+      </section>
+
+      <!-- Assessment Questions -->
+      <section class="page hidden" id="assessmentPage">
+        <div class="assessment-header">
+          <div class="assessment-progress">
+            <span id="currentDimensionName"></span>
+            <div class="progress-bar">
+              <div class="progress-fill" id="assessmentProgress"></div>
+            </div>
+            <span id="progressText">1 / 4</span>
+          </div>
+          <button class="close-btn" onclick="confirmExitAssessment()">✕</button>
+        </div>
+        <div class="question-container">
+          <div class="question-card">
+            <h3 id="questionText"></h3>
+            <div class="options" id="questionOptions"></div>
+          </div>
+        </div>
+        <div class="assessment-nav">
+          <button class="secondary-btn" id="prevQuestionBtn" onclick="prevQuestion()" disabled>上一题</button>
+          <button class="primary-btn" id="nextQuestionBtn" onclick="nextQuestion()" disabled>下一题</button>
+        </div>
+      </section>
+
+      <!-- Results Page -->
+      <section class="page hidden" id="resultsPage">
+        <div class="results-header">
+          <h2>评估完成！</h2>
+          <p id="resultDate"></p>
+        </div>
+
+        <!-- Overall Score Card -->
+        <div class="overall-score-card">
+          <div class="score-circle">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="45" class="score-bg"/>
+              <circle cx="50" cy="50" r="45" class="score-fill" id="scoreCircle"/>
+            </svg>
+            <div class="score-value">
+              <span id="overallScoreValue">0</span>
+              <small>分</small>
+            </div>
+          </div>
+          <div class="score-details">
+            <div class="percentile-badge">
+              <span>超过</span>
+              <strong id="percentileValue">0%</strong>
+              <span>同龄人</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Scores -->
+        <div class="category-scores-card">
+          <h3>📂 各类别得分</h3>
+          <div class="category-bars" id="categoryBars"></div>
+        </div>
+
+        <!-- Strengths & Improvements -->
+        <div class="analysis-cards">
+          <div class="analysis-card strengths">
+            <h3>💪 优势领域</h3>
+            <ul id="strengthsList"></ul>
+          </div>
+          <div class="analysis-card improvements">
+            <h3>📚 提升空间</h3>
+            <ul id="improvementsList"></ul>
+          </div>
+        </div>
+
+        <!-- Dimension Details -->
+        <div class="dimension-details">
+          <h3>📊 详细维度分析</h3>
+          <div class="dimension-grid" id="dimensionGrid"></div>
+        </div>
+
+        <!-- Charts -->
+        <div class="results-charts">
+          <div class="chart-card full-width">
+            <h3>🕸️ 能力雷达图</h3>
+            <div class="chart-container">
+              <canvas id="resultRadarChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="recommendations-card">
+          <h3>💡 发展建议</h3>
+          <div id="recommendationsList"></div>
+        </div>
+
+        <!-- Actions -->
+        <div class="results-actions">
+          <button class="secondary-btn" onclick="printReport()">🖨️ 打印报告</button>
+          <button class="primary-btn" onclick="goToDashboard()">返回主页</button>
+        </div>
+      </section>
+
+      <!-- History Page -->
+      <section class="page hidden" id="historyPage">
+        <div class="page-header">
+          <button class="back-btn" onclick="goToDashboard()">← 返回</button>
+          <h2>评估历史</h2>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal" id="profileModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="profileModalTitle">新建儿童档案</h3>
+        <button class="close-modal" onclick="closeProfileModal()">✕</button>
+      </div>
+      <form id="profileForm" onsubmit="saveProfile(event)">
+        <div class="form-group">
+          <label>姓名</label>
+          <input type="text" id="profileName" required placeholder="请输入儿童姓名">
+        </div>
+        <div class="form-group">
+          <label>出生日期</label>
+          <input type="date" id="profileBirthDate" required>
+        </div>
+        <div class="form-group">
+          <label>性别</label>
+          <select id="profileGender" required>
+            <option value="">请选择</option>
+            <option value="male">男</option>
+            <option value="female">女</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>头像颜色</label>
+          <div class="color-picker" id="colorPicker">
+            <button type="button" class="color-option" data-color="#4A90D9" style="background:#4A90D9"></button>
+            <button type="button" class="color-option" data-color="#E74C8C" style="background:#E74C8C"></button>
+            <button type="button" class="color-option" data-color="#27AE60" style="background:#27AE60"></button>
+            <button type="button" class="color-option" data-color="#F39C12" style="background:#F39C12"></button>
+            <button type="button" class="color-option" data-color="#9B59B6" style="background:#9B59B6"></button>
+            <button type="button" class="color-option" data-color="#1ABC9C" style="background:#1ABC9C"></button>
+            <button type="button" class="color-option" data-color="#E67E22" style="background:#E67E22"></button>
+            <button type="button" class="color-option" data-color="#3498DB" style="background:#3498DB"></button>
+          </div>
+          <input type="hidden" id="profileAvatarColor" value="#4A90D9">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="danger-btn" id="deleteProfileBtn" onclick="deleteCurrentProfile()" style="display:none">删除档案</button>
+          <button type="submit" class="primary-btn">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Result Detail Modal -->
+  <div class="modal" id="resultModal">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3>评估详情</h3>
+        <button class="close-modal" onclick="closeResultModal()">✕</button>
+      </div>
+      <div id="resultModalContent"></div>
+    </div>
+  </div>
+
+  <!-- Continue Test Modal -->
+  <div class="modal" id="continueModal">
+    <div class="modal-content small">
+      <div class="modal-header">
+        <h3>继续上次评估？</h3>
+        <button class="close-modal" onclick="closeContinueModal()">✕</button>
+      </div>
+      <p>您有一个未完成的评估，是否继续？</p>
+      <div class="modal-actions">
+        <button class="secondary-btn" onclick="startFreshAssessment()">重新开始</button>
+        <button class="primary-btn" onclick="continueLastAssessment()">继续</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confetti Container -->
+  <div id="confetti"></div>
+
+  <!-- Loading State -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+    <p>加载中...</p>
+  </div>
+
+  <script>
+    // ==================== GLOBAL STATE ====================
+    let currentProfile = null;
+    let dimensions = [];
+    let categories = [];
+    let assessmentMode = null;
+    let selectedCategories = [];
+    let selectedDimensions = [];
+    let currentAssessment = {
+      dimensionScores: {},
+      answers: {},
+      currentDimensionIndex: 0,
+      currentQuestionIndex: 0,
+      mode: null
+    };
+    let growthChart = null;
+    let radarChart = null;
+    let resultRadarChart = null;
+    let isDarkMode = false;
+
+    // ==================== INITIALIZATION ====================
+    document.addEventListener('DOMContentLoaded', async () => {
+      showLoading();
+      await loadDimensions();
+      await loadProfiles();
+      hideLoading();
+
+      // Check dark mode preference
+      if (localStorage.getItem('darkMode') === 'true') {
+        toggleDarkMode();
+      }
+    });
+
+    async function loadDimensions() {
+      try {
+        const res = await fetch('/api/dimensions');
+        const data = await res.json();
+        dimensions = data.dimensions;
+        categories = data.categories;
+      } catch (e) {
+        console.error('Failed to load dimensions:', e);
+      }
+    }
+
+    async function loadProfiles() {
+      try {
+        const res = await fetch('/api/profiles');
+        const profiles = await res.json();
+        renderProfileList(profiles);
+
+        // Check if there's a saved current profile
+        const savedProfileId = localStorage.getItem('currentProfileId');
+        if (savedProfileId) {
+          const profile = profiles.find(p => p.id === savedProfileId);
+          if (profile) {
+            await selectProfile(profile.id);
+            return;
+          }
+        }
+
+        showPage('welcomePage');
+      } catch (e) {
+        console.error('Failed to load profiles:', e);
+        showPage('welcomePage');
+      }
+    }
+
+    // ==================== PAGE NAVIGATION ====================
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function toggleDarkMode() {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      localStorage.setItem('darkMode', isDarkMode);
+      document.querySelector('.dark-mode-icon').textContent = isDarkMode ? '☀️' : '🌙';
+    }
+
+    // ==================== PROFILE MANAGEMENT ====================
+    function renderProfileList(profiles) {
+      const list = document.getElementById('profileList');
+      if (profiles.length === 0) {
+        list.innerHTML = '<p class="no-profiles">暂无档案</p>';
+        return;
+      }
+      list.innerHTML = profiles.map(p => `
+        <div class="profile-item ${currentProfile && currentProfile.id === p.id ? 'active' : ''}" onclick="selectProfile('${p.id}')">
+          <div class="avatar small" style="background-color: ${p.avatarColor}">${p.name.charAt(0)}</div>
+          <span>${p.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleProfileDropdown() {
+      const dropdown = document.getElementById('profileDropdown');
+      dropdown.classList.toggle('show');
+    }
+
+    function closeProfileDropdown() {
+      document.getElementById('profileDropdown').classList.remove('show');
+    }
+
+    async function selectProfile(profileId) {
+      showLoading();
+      try {
+        const res = await fetch(`/api/profiles/${profileId}`);
+        currentProfile = await res.json();
+        localStorage.setItem('currentProfileId', profileId);
+
+        document.getElementById('currentAvatar').textContent = currentProfile.name.charAt(0);
+        document.getElementById('currentAvatar').style.backgroundColor = currentProfile.avatarColor;
+        document.getElementById('currentProfileName').textContent = currentProfile.name;
+
+        closeProfileDropdown();
+        await loadDashboard();
+        showPage('dashboardPage');
+      } catch (e) {
+        console.error('Failed to select profile:', e);
+      }
+      hideLoading();
+    }
+
+    function showProfileModal(profileId = null) {
+      const modal = document.getElementById('profileModal');
+      const form = document.getElementById('profileForm');
+      form.reset();
+
+      document.getElementById('colorPicker').querySelectorAll('.color-option').forEach(btn => {
+        btn.classList.remove('selected');
+        if (btn.dataset.color === '#4A90D9') btn.classList.add('selected');
+      });
+      document.getElementById('profileAvatarColor').value = '#4A90D9';
+
+      if (profileId) {
+        document.getElementById('profileModalTitle').textContent = '编辑儿童档案';
+        document.getElementById('deleteProfileBtn').style.display = 'block';
+        // Load existing profile data
+        const profile = currentProfile.id === profileId ? currentProfile : null;
+        if (profile) {
+          document.getElementById('profileName').value = profile.name;
+          document.getElementById('profileBirthDate').value = profile.birthDate;
+          document.getElementById('profileGender').value = profile.gender;
+          document.getElementById('profileAvatarColor').value = profile.avatarColor;
+          document.querySelector(`.color-option[data-color="${profile.avatarColor}"]`)?.classList.add('selected');
+        }
+      } else {
+        document.getElementById('profileModalTitle').textContent = '新建儿童档案';
+        document.getElementById('deleteProfileBtn').style.display = 'none';
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profileModal').classList.remove('show');
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      showLoading();
+
+      const data = {
+        name: document.getElementById('profileName').value,
+        birthDate: document.getElementById('profileBirthDate').value,
+        gender: document.getElementById('profileGender').value,
+        avatarColor: document.getElementById('profileAvatarColor').value
+      };
+
+      try {
+        if (currentProfile) {
+          // Update existing
+          await fetch(`/api/profiles/${currentProfile.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } else {
+          // Create new
+          const res = await fetch('/api/profiles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const newProfile = await res.json();
+          await selectProfile(newProfile.id);
+          closeProfileModal();
+          hideLoading();
+          return;
+        }
+
+        await loadProfiles();
+        if (currentProfile) {
+          await selectProfile(currentProfile.id);
+        }
+        closeProfileModal();
+      } catch (e) {
+        console.error('Failed to save profile:', e);
+      }
+      hideLoading();
+    }
+
+    async function deleteCurrentProfile() {
+      if (!currentProfile) return;
+      if (!confirm(`确定要删除 ${currentProfile.name} 的档案吗？此操作不可恢复。`)) return;
+
+      showLoading();
+      try {
+        await fetch(`/api/profiles/${currentProfile.id}`, { method: 'DELETE' });
+        currentProfile = null;
+        localStorage.removeItem('currentProfileId');
+        closeProfileModal();
+        await loadProfiles();
+        document.getElementById('currentAvatar').textContent = '请选择';
+        document.getElementById('currentAvatar').style.backgroundColor = '#4A90D9';
+        document.getElementById('currentProfileName').textContent = '选择儿童';
+        showPage('welcomePage');
+      } catch (e) {
+        console.error('Failed to delete profile:', e);
+      }
+      hideLoading();
+    }
+
+    // Color picker
+    document.querySelectorAll('.color-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        document.getElementById('profileAvatarColor').value = btn.dataset.color;
+      });
+    });
+
+    // ==================== DASHBOARD ====================
+    async function loadDashboard() {
+      if (!currentProfile) return;
+
+      document.getElementById('dashboardAvatar').textContent = currentProfile.name.charAt(0);
+      document.getElementById('dashboardAvatar').style.backgroundColor = currentProfile.avatarColor;
+      document.getElementById('dashboardName').textContent = currentProfile.name;
+
+      const age = calculateAge(currentProfile.birthDate);
+      document.getElementById('dashboardAge').textContent = `${age.years}岁${age.months}个月`;
+
+      // Load results
+      try {
+        const res = await fetch(`/api/profiles/${currentProfile.id}/results`);
+        const results = await res.json();
+
+        document.getElementById('totalAssessments').textContent = results.length;
+
+        if (results.length > 0) {
+          const avgScore = (results.reduce((sum, r) => sum + r.overallScore, 0) / results.length).toFixed(1);
+          document.getElementById('avgScore').textContent = avgScore;
+          document.getElementById('latestPercentile').textContent = results[0].percentile + '%';
+
+          const latestStrengths = results[0].strengths || [];
+          document.getElementById('strengthCount').textContent = latestStrengths.length;
+
+          renderResultsList(results);
+          renderGrowthChart(results);
+          renderRadarChart(results[0]);
+        } else {
+          document.getElementById('avgScore').textContent = '-';
+          document.getElementById('latestPercentile').textContent = '-';
+          document.getElementById('strengthCount').textContent = '0';
+          document.getElementById('resultsList').innerHTML = '<p class="no-results">暂无评估记录</p>';
+        }
+      } catch (e) {
+        console.error('Failed to load dashboard:', e);
+      }
+    }
+
+    function calculateAge(birthDate) {
+      const birth = new Date(birthDate);
+      const now = new Date();
+      let years = now.getFullYear() - birth.getFullYear();
+      let months = now.getMonth() - birth.getMonth();
+      if (months < 0) {
+        years--;
+        months += 12;
+      }
+      return { years, months };
+    }
+
+    function renderResultsList(results) {
+      const container = document.getElementById('resultsList');
+      if (results.length === 0) {
+        container.innerHTML = '<p class="no-results">暂无评估记录</p>';
+        return;
+      }
+
+      container.innerHTML = results.slice(0, 5).map(r => `
+        <div class="result-item" onclick="showResultDetail('${r.id}')">
+          <div class="result-date">${new Date(r.date).toLocaleDateString('zh-CN')}</div>
+          <div class="result-score">${r.overallScore}分</div>
+          <div class="result-percentile">超过${r.percentile}%同龄人</div>
+          <div class="result-mode">${getModeName(r.mode)}</div>
+        </div>
+      `).join('');
+    }
+
+    function getModeName(mode) {
+      const names = { full: '全面评估', category: '分类评估', dimensions: '自定义组合' };
+      return names[mode] || mode;
+    }
+
+    function renderGrowthChart(results) {
+      const ctx = document.getElementById('growthChart').getContext('2d');
+
+      if (growthChart) growthChart.destroy();
+
+      const sortedResults = [...results].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      growthChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: sortedResults.map(r => new Date(r.date).toLocaleDateString('zh-CN')),
+          datasets: [{
+            label: '综合得分',
+            data: sortedResults.map(r => r.overallScore),
+            borderColor: '#4A90D9',
+            backgroundColor: 'rgba(74, 144, 217, 0.1)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { min: 0, max: 5 }
+          }
+        }
+      });
+    }
+
+    function renderRadarChart(result) {
+      const ctx = document.getElementById('radarChart').getContext('2d');
+
+      if (radarChart) radarChart.destroy();
+
+      const categoryScores = result.categoryScores || {};
+      const labels = categories.map(c => c.name);
+      const data = categories.map(c => categoryScores[c.id] || 0);
+
+      radarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: [{
+            label: '能力得分',
+            data,
+            backgroundColor: 'rgba(74, 144, 217, 0.2)',
+            borderColor: '#4A90D9',
+            pointBackgroundColor: '#4A90D9'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            r: { min: 0, max: 5 }
+          }
+        }
+      });
+    }
+
+    // ==================== ASSESSMENT FLOW ====================
+    function startAssessment() {
+      showPage('modeSelectPage');
+    }
+
+    function goToDashboard() {
+      loadDashboard();
+      showPage('dashboardPage');
+    }
+
+    function goBackToModeSelect() {
+      if (assessmentMode === 'category') {
+        showPage('categorySelectPage');
+      } else if (assessmentMode === 'dimensions') {
+        showPage('dimensionSelectPage');
+      } else {
+        showPage('modeSelectPage');
+      }
+    }
+
+    function selectMode(mode) {
+      assessmentMode = mode;
+      currentAssessment.mode = mode;
+      currentAssessment.dimensionScores = {};
+      currentAssessment.answers = {};
+
+      if (mode === 'full') {
+        // Full assessment - select all dimensions
+        selectedDimensions = dimensions.map(d => d.id);
+        startAssessmentQuestions();
+      } else if (mode === 'category') {
+        renderCategorySelection();
+        showPage('categorySelectPage');
+      } else {
+        renderDimensionSelection();
+        showPage('dimensionSelectPage');
+      }
+    }
+
+    function renderCategorySelection() {
+      const grid = document.getElementById('categoryGrid');
+      grid.innerHTML = categories.map(c => `
+        <div class="category-card ${selectedCategories.includes(c.id) ? 'selected' : ''}"
+             data-category="${c.id}" onclick="toggleCategory('${c.id}')">
+          <div class="category-icon">${c.icon}</div>
+          <div class="category-name">${c.name}</div>
+          <div class="category-count">${dimensions.filter(d => d.categoryId === c.id).length}个维度</div>
+        </div>
+      `).join('');
+    }
+
+    function toggleCategory(categoryId) {
+      const idx = selectedCategories.indexOf(categoryId);
+      if (idx >= 0) {
+        selectedCategories.splice(idx, 1);
+      } else {
+        selectedCategories.push(categoryId);
+      }
+      renderCategorySelection();
+      document.getElementById('selectedCategoryCount').textContent = selectedCategories.length;
+      document.getElementById('startCategoryBtn').disabled = selectedCategories.length === 0;
+    }
+
+    function startCategoryAssessment() {
+      selectedDimensions = dimensions
+        .filter(d => selectedCategories.includes(d.categoryId))
+        .map(d => d.id);
+      startAssessmentQuestions();
+    }
+
+    function renderDimensionSelection() {
+      const filter = document.getElementById('categoryFilter');
+      filter.innerHTML = `<button class="filter-btn active" data-category="all" onclick="filterByCategory('all')">全部</button>` +
+        categories.map(c => `<button class="filter-btn" data-category="${c.id}" onclick="filterByCategory('${c.id}')">${c.icon} ${c.name}</button>`).join('');
+
+      renderDimensionList();
+    }
+
+    function filterByCategory(categoryId) {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === categoryId);
+      });
+      renderDimensionList();
+    }
+
+    function filterDimensions() {
+      renderDimensionList();
+    }
+
+    function renderDimensionList() {
+      const searchTerm = document.getElementById('dimensionSearch').value.toLowerCase();
+      const activeFilter = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
+
+      const filtered = dimensions.filter(d => {
+        const matchesSearch = d.name.toLowerCase().includes(searchTerm) ||
+          d.description.toLowerCase().includes(searchTerm);
+        const matchesCategory = activeFilter === 'all' || d.categoryId === activeFilter;
+        return matchesSearch && matchesCategory;
+      });
+
+      const list = document.getElementById('dimensionList');
+      list.innerHTML = filtered.map(d => {
+        const cat = categories.find(c => c.id === d.categoryId);
+        return `
+          <div class="dimension-item ${selectedDimensions.includes(d.id) ? 'selected' : ''}"
+               data-dimension="${d.id}" onclick="toggleDimension('${d.id}')">
+            <div class="dimension-checkbox">
+              ${selectedDimensions.includes(d.id) ? '✓' : ''}
+            </div>
+            <div class="dimension-info">
+              <div class="dimension-name">${d.name}</div>
+              <div class="dimension-meta">
+                <span class="dimension-category" style="color: ${cat?.color}">${cat?.icon} ${cat?.name}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('selectedDimensionCount').textContent = selectedDimensions.length;
+      document.getElementById('startDimensionBtn').disabled = selectedDimensions.length === 0;
+    }
+
+    function toggleDimension(dimId) {
+      const idx = selectedDimensions.indexOf(dimId);
+      if (idx >= 0) {
+        selectedDimensions.splice(idx, 1);
+      } else {
+        selectedDimensions.push(dimId);
+      }
+      renderDimensionList();
+    }
+
+    function selectAllDimensions() {
+      selectedDimensions = dimensions.map(d => d.id);
+      renderDimensionList();
+    }
+
+    function clearDimensionSelection() {
+      selectedDimensions = [];
+      renderDimensionList();
+    }
+
+    function startDimensionAssessment() {
+      if (selectedDimensions.length === 0) return;
+      startAssessmentQuestions();
+    }
+
+    function startAssessmentQuestions() {
+      currentAssessment.currentDimensionIndex = 0;
+      currentAssessment.currentQuestionIndex = 0;
+      currentAssessment.dimensionScores = {};
+      currentAssessment.answers = {};
+
+      showPage('assessmentPage');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const dim = dimensions.find(d => d.id === selectedDimensions[currentAssessment.currentDimensionIndex]);
+      if (!dim) {
+        finishAssessment();
+        return;
+      }
+
+      const qIndex = currentAssessment.currentQuestionIndex;
+      const question = dim.questions[qIndex];
+      if (!question) {
+        // Dimension complete, move to next
+        currentAssessment.currentDimensionIndex++;
+        currentAssessment.currentQuestionIndex = 0;
+        renderQuestion();
+        return;
+      }
+
+      document.getElementById('currentDimensionName').textContent = dim.name;
+      document.getElementById('questionText').textContent = question.text;
+
+      const totalQuestions = selectedDimensions.length * 4;
+      const currentQ = currentAssessment.currentDimensionIndex * 4 + currentAssessment.currentQuestionIndex + 1;
+      const progress = (currentQ / totalQuestions) * 100;
+      document.getElementById('assessmentProgress').style.width = progress + '%';
+      document.getElementById('progressText').textContent = `${currentQ} / ${totalQuestions}`;
+
+      const optionsContainer = document.getElementById('questionOptions');
+      optionsContainer.innerHTML = question.options.map((opt, i) => `
+        <button class="option-btn ${currentAssessment.answers[question.id] === i + 1 ? 'selected' : ''}"
+                onclick="selectOption('${question.id}', ${i + 1})">
+          <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+          <span class="option-text">${opt}</span>
+        </button>
+      `).join('');
+
+      document.getElementById('nextQuestionBtn').disabled = currentAssessment.answers[question.id] === undefined;
+      document.getElementById('prevQuestionBtn').disabled = currentAssessment.currentDimensionIndex === 0 && currentAssessment.currentQuestionIndex === 0;
+    }
+
+    function selectOption(questionId, value) {
+      currentAssessment.answers[questionId] = value;
+      renderQuestion();
+    }
+
+    function nextQuestion() {
+      const dim = dimensions.find(d => d.id === selectedDimensions[currentAssessment.currentDimensionIndex]);
+      const question = dim.questions[currentAssessment.currentQuestionIndex];
+
+      // Save score for this question
+      if (!currentAssessment.dimensionScores[dim.id]) {
+        currentAssessment.dimensionScores[dim.id] = { questions: [], score: 0 };
+      }
+      currentAssessment.dimensionScores[dim.id].questions[currentAssessment.currentQuestionIndex] = currentAssessment.answers[question.id];
+
+      // Calculate dimension score
+      const scores = currentAssessment.dimensionScores[dim.id].questions.filter(s => s !== undefined);
+      if (scores.length === 4) {
+        currentAssessment.dimensionScores[dim.id].score = scores.reduce((a, b) => a + b, 0) / 4;
+      }
+
+      currentAssessment.currentQuestionIndex++;
+      if (currentAssessment.currentQuestionIndex >= 4) {
+        currentAssessment.currentQuestionIndex = 0;
+        currentAssessment.currentDimensionIndex++;
+      }
+
+      renderQuestion();
+    }
+
+    function prevQuestion() {
+      if (currentAssessment.currentQuestionIndex > 0) {
+        currentAssessment.currentQuestionIndex--;
+      } else if (currentAssessment.currentDimensionIndex > 0) {
+        currentAssessment.currentDimensionIndex--;
+        currentAssessment.currentQuestionIndex = 3;
+      }
+      renderQuestion();
+    }
+
+    async function finishAssessment() {
+      showLoading();
+      try {
+        // Calculate category scores
+        const categoryScores = {};
+        categories.forEach(cat => {
+          const catDims = selectedDimensions.filter(dimId => {
+            const dim = dimensions.find(d => d.id === dimId);
+            return dim && dim.categoryId === cat.id;
+          });
+          if (catDims.length > 0) {
+            const scores = catDims.map(dimId => currentAssessment.dimensionScores[dimId]?.score || 0);
+            categoryScores[cat.id] = scores.reduce((a, b) => a + b, 0) / scores.length;
+          }
+        });
+
+        const res = await fetch(`/api/profiles/${currentProfile.id}/results`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dimensionScores: currentAssessment.dimensionScores,
+            categoryScores,
+            mode: assessmentMode,
+            categoryIds: selectedCategories,
+            dimensionIds: selectedDimensions
+          })
+        });
+
+        const result = await res.json();
+        currentAssessment.resultId = result.id;
+
+        renderResultDetail(result);
+        showPage('resultsPage');
+
+        // Confetti for high scores
+        if (result.overallScore >= 4.0) {
+          showConfetti();
+        }
+      } catch (e) {
+        console.error('Failed to save result:', e);
+      }
+      hideLoading();
+    }
+
+    function confirmExitAssessment() {
+      if (confirm('确定要退出评估吗？当前进度将不会保存。')) {
+        goToDashboard();
+      }
+    }
+
+    // ==================== RESULTS ====================
+    function renderResultDetail(result) {
+      document.getElementById('resultDate').textContent = new Date(result.date).toLocaleDateString('zh-CN', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      // Overall score
+      document.getElementById('overallScoreValue').textContent = result.overallScore;
+      document.getElementById('percentileValue').textContent = result.percentile + '%';
+
+      const circle = document.getElementById('scoreCircle');
+      const circumference = 2 * Math.PI * 45;
+      const offset = circumference - (result.overallScore / 5) * circumference;
+      circle.style.strokeDasharray = circumference;
+      circle.style.strokeDashoffset = offset;
+
+      // Category bars
+      const categoryBars = document.getElementById('categoryBars');
+      categoryBars.innerHTML = Object.entries(result.categoryScores || {}).map(([catId, score]) => {
+        const cat = categories.find(c => c.id === catId);
+        return `
+          <div class="category-bar-item">
+            <span class="bar-label">${cat?.icon} ${cat?.name}</span>
+            <div class="bar-track">
+              <div class="bar-fill" style="width: ${score * 20}%; background: ${cat?.color}"></div>
+            </div>
+            <span class="bar-value">${score.toFixed(1)}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Strengths & Improvements
+      document.getElementById('strengthsList').innerHTML = (result.strengths || []).map(s => `<li>${s}</li>`).join('') || '<li>暂无</li>';
+      document.getElementById('improvementsList').innerHTML = (result.improvements || []).map(i => `<li>${i}</li>`).join('') || '<li>暂无</li>';
+
+      // Dimension details
+      const dimensionGrid = document.getElementById('dimensionGrid');
+      dimensionGrid.innerHTML = Object.entries(result.dimensionScores || {}).map(([dimId, data]) => {
+        const dim = dimensions.find(d => d.id === dimId);
+        return `
+          <div class="dimension-detail-item">
+            <div class="dimension-detail-header">
+              <span>${dim?.name || dimId}</span>
+              <span class="dimension-score">${data.score.toFixed(1)}</span>
+            </div>
+            <div class="dimension-questions">
+              ${data.questions.map((q, i) => `<span class="q-tag ${q >= 4 ? 'high' : q <= 2 ? 'low' : ''}">Q${i + 1}: ${q}</span>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Radar chart
+      const ctx = document.getElementById('resultRadarChart').getContext('2d');
+      if (resultRadarChart) resultRadarChart.destroy();
+
+      const labels = categories.map(c => c.name);
+      const data = categories.map(c => result.categoryScores?.[c.id] || 0);
+
+      resultRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: [{
+            label: '能力得分',
+            data,
+            backgroundColor: 'rgba(74, 144, 217, 0.2)',
+            borderColor: '#4A90D9',
+            pointBackgroundColor: '#4A90D9'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { r: { min: 0, max: 5 } }
+        }
+      });
+
+      // Recommendations
+      const recommendationsList = document.getElementById('recommendationsList');
+      recommendationsList.innerHTML = Object.entries(result.recommendations || {}).map(([dimId, rec]) => {
+        const dim = dimensions.find(d => d.id === dimId);
+        return `
+          <div class="recommendation-item">
+            <strong>${dim?.name || dimId}</strong>
+            <p>${rec}</p>
+          </div>
+        `;
+      }).join('') || '<p>暂无建议</p>';
+    }
+
+    async function showResultDetail(resultId) {
+      showLoading();
+      try {
+        const res = await fetch(`/api/results/${resultId}`);
+        const result = await res.json();
+        renderResultDetail(result);
+        document.getElementById('resultModal').classList.add('show');
+      } catch (e) {
+        console.error('Failed to load result:', e);
+      }
+      hideLoading();
+    }
+
+    function closeResultModal() {
+      document.getElementById('resultModal').classList.remove('show');
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    // ==================== EFFECTS ====================
+    function showConfetti() {
+      const container = document.getElementById('confetti');
+      const colors = ['#4A90D9', '#E74C8C', '#27AE60', '#F39C12', '#9B59B6'];
+
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti-piece';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        container.appendChild(confetti);
+      }
+
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 5000);
+    }
+
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('show');
+    }
+
+    // Close dropdowns on outside click
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.profile-selector')) {
+        closeProfileDropdown();
+      }
+    });
+  </script>
+</body>
+</html>
